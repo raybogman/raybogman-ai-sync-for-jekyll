@@ -1,10 +1,10 @@
-=== RayBogman – Jekyll Sync ===
+=== Ray Bogman Jekyll Sync ===
 Contributors: raybogman
 Tags: jekyll, github, github-pages, static-site, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 5.2.0
+Stable tag: 5.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Push WordPress posts and pages to a Jekyll GitHub Pages repository as Markdown w
 
 == Description ==
 
-RayBogman Jekyll Sync lets you edit content in WordPress and publish it to a Jekyll site hosted on GitHub Pages.
+Ray Bogman Jekyll Sync lets you edit content in WordPress and publish it to a Jekyll site hosted on GitHub Pages.
 
 Features:
 
@@ -60,6 +60,9 @@ No. You control what gets published via the Approved toggle + explicit push.
 
 == Changelog ==
 
+= 5.3.0 =
+* Display name changed to "Ray Bogman Jekyll Sync" everywhere (no dashes, no RayBogman compound).
+
 = 5.2.0 =
 * AI features now fully independent — no dependency on RayAI Content Orchestrator.
 * Own API key, provider (Claude/OpenAI), and model fields on Connection tab.
@@ -67,7 +70,7 @@ No. You control what gets published via the Approved toggle + explicit push.
 * AI Model field added (customizable, defaults to claude-sonnet-4-6 / gpt-4o).
 
 = 5.1.0 =
-* Renamed plugin from "RayAI – Jekyll Sync" to "RayBogman – Jekyll Sync" with slug `raybogman-jekyll-sync`.
+* Renamed plugin from "RayAI – Jekyll Sync" to "Ray Bogman Jekyll Sync" with slug `raybogman-jekyll-sync`.
 * Updated all display strings, page titles, and metadata to reflect the new brand name.
 * Kept internal class names, option keys, and constants unchanged.
 
@@ -122,14 +125,14 @@ No. You control what gets published via the Approved toggle + explicit push.
 * Delete actions refactored to use Publisher::delete() with logging.
 
 = 3.3.0 =
-* Added **More by RayBogman** tab showcasing the RayBogman plugin ecosystem.
+* Added **More by Ray Bogman** tab showcasing the Ray Bogman plugin ecosystem.
 * Content Orchestrator product card with features, pricing table, and install detection.
 * Jekyll Sync card with ACTIVE badge.
-* RayBogman Ecosystem visual pipeline: Create → Publish → Live.
+* Ray Bogman Ecosystem visual pipeline: Create → Publish → Live.
 
 = 3.2.0 =
 * Fixed duplicate FAQ tab in navigation.
-* Branded page title: "RayBogman – Jekyll Sync — Settings" with dashicon on all pages.
+* Branded page title: "Ray Bogman Jekyll Sync — Settings" with dashicon on all pages.
 * Renamed "Content Style" tab to "Formatting".
 * FAQ and About tabs now use full page width.
 
@@ -139,7 +142,7 @@ No. You control what gets published via the Approved toggle + explicit push.
 * FAQ and About tabs visible even when not connected to GitHub.
 
 = 3.0.0 =
-* Renamed plugin to "RayBogman Jekyll Sync" with slug `raybogman-jekyll-sync` for WP.org trademark compliance.
+* Renamed plugin to "Ray Bogman Jekyll Sync" with slug `raybogman-jekyll-sync` for WP.org trademark compliance.
 * Fixed all Plugin Check warnings with proper phpcs:ignore annotations.
 * Major version bump for the rename.
 

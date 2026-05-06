@@ -221,7 +221,7 @@ class WPJS_Admin {
 		<div class="wrap">
 			<h1>
 				<span class="dashicons dashicons-share-alt" style="font-size:28px;width:28px;height:28px;vertical-align:middle;margin-right:8px;"></span>
-				RayBogman – Jekyll Sync — Settings
+				Ray Bogman Jekyll Sync — Settings
 			</h1>
 
 			<nav class="nav-tab-wrapper" style="margin-bottom:16px;">
@@ -242,7 +242,7 @@ class WPJS_Admin {
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=wpjs-settings&tab=about' ) ); ?>"
 				   class="nav-tab <?php echo $active_tab === 'about' ? 'nav-tab-active' : ''; ?>">About</a>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=wpjs-settings&tab=products' ) ); ?>"
-				   class="nav-tab <?php echo $active_tab === 'products' ? 'nav-tab-active' : ''; ?>">More by RayBogman</a>
+				   class="nav-tab <?php echo $active_tab === 'products' ? 'nav-tab-active' : ''; ?>">More by Ray Bogman</a>
 			</nav>
 
 			<?php if ( ! $connected ) : ?>
@@ -662,7 +662,7 @@ class WPJS_Admin {
 
 			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-what-does-it-do">
 				<h3 style="margin-top:0;">What does this plugin do?</h3>
-				<p>RayBogman – Jekyll Sync lets you publish WordPress posts and pages to a Jekyll site hosted on GitHub Pages. It converts your HTML content to Markdown with YAML front matter, uploads featured images, rewrites internal links, and commits everything directly to your GitHub repository — all from within the WordPress admin.</p>
+				<p>Ray Bogman Jekyll Sync lets you publish WordPress posts and pages to a Jekyll site hosted on GitHub Pages. It converts your HTML content to Markdown with YAML front matter, uploads featured images, rewrites internal links, and commits everything directly to your GitHub repository — all from within the WordPress admin.</p>
 			</div>
 
 			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-github-oauth">
@@ -762,10 +762,10 @@ class WPJS_Admin {
 			<div class="card" style="padding:16px 20px;">
 				<h2 style="margin-top:0;">
 					<span class="dashicons dashicons-share-alt" style="font-size:24px;width:24px;height:24px;color:#2271b1;margin-right:8px;vertical-align:middle;"></span>
-					About RayBogman – Jekyll Sync
+					About Ray Bogman Jekyll Sync
 				</h2>
 				<p style="font-size:14px;line-height:1.6;">
-					<strong>RayBogman – Jekyll Sync</strong> bridges the gap between WordPress content management and Jekyll static site generation. Write and manage your content in WordPress, then publish directly to your Jekyll GitHub Pages site with a single click.
+					<strong>Ray Bogman Jekyll Sync</strong> bridges the gap between WordPress content management and Jekyll static site generation. Write and manage your content in WordPress, then publish directly to your Jekyll GitHub Pages site with a single click.
 				</p>
 				<p style="font-size:14px;line-height:1.6;">
 					The plugin handles the entire conversion pipeline: HTML to Markdown, YAML front matter generation, featured image uploads, internal link rewriting, and Git commits — all through the GitHub API, no CLI or server-side Git required.
@@ -848,7 +848,7 @@ class WPJS_Admin {
 
 			<div class="card" style="padding:16px 20px;text-align:center;">
 				<p style="color:#50575e;font-size:13px;margin:0;">
-					RayBogman – Jekyll Sync v<?php echo esc_html( WPJS_VERSION ); ?> · &copy; <?php echo esc_html( gmdate( 'Y' ) ); ?>
+					Ray Bogman Jekyll Sync v<?php echo esc_html( WPJS_VERSION ); ?> · &copy; <?php echo esc_html( gmdate( 'Y' ) ); ?>
 					<a href="https://raybogman.com" target="_blank" rel="noopener" style="color:#50575e;">Ray Bogman</a>
 				</p>
 			</div>
@@ -865,7 +865,7 @@ class WPJS_Admin {
 			<div class="card" style="padding:20px;">
 				<h2 style="margin-top:0;">
 					<span class="dashicons dashicons-store" style="font-size:24px;width:24px;height:24px;color:#2271b1;margin-right:8px;vertical-align:middle;"></span>
-					More Solutions by RayBogman
+					More Solutions by Ray Bogman
 				</h2>
 				<p style="font-size:14px;line-height:1.6;">
 					Explore the full suite of WordPress plugins by Ray Bogman, designed to supercharge your content workflow with AI-powered automation.
@@ -951,7 +951,7 @@ class WPJS_Admin {
 					<div style="flex:1;min-width:400px;">
 						<h2 style="margin-top:0;">
 							<span class="dashicons dashicons-share-alt" style="font-size:24px;width:24px;height:24px;color:#00a32a;margin-right:8px;vertical-align:middle;"></span>
-							RayBogman – Jekyll Sync
+							Ray Bogman Jekyll Sync
 							<span style="background:#00a32a;color:#fff;font-size:11px;padding:2px 8px;border-radius:3px;vertical-align:middle;margin-left:8px;">ACTIVE</span>
 						</h2>
 						<p style="font-size:14px;line-height:1.6;">
@@ -974,10 +974,10 @@ class WPJS_Admin {
 			<div class="card" style="padding:20px;margin-top:16px;">
 				<h2 style="margin-top:0;">
 					<span class="dashicons dashicons-megaphone" style="font-size:24px;width:24px;height:24px;color:#dba617;margin-right:8px;vertical-align:middle;"></span>
-					RayBogman Ecosystem
+					Ray Bogman Ecosystem
 				</h2>
 				<p style="font-size:14px;line-height:1.6;">
-					The RayBogman plugin suite is designed to work together. Use <strong>Content Orchestrator</strong> to generate AI-powered blog posts, then use <strong>Jekyll Sync</strong> to publish them to your static Jekyll site — a complete content-to-deployment pipeline.
+					The Ray Bogman plugin suite is designed to work together. Use <strong>Content Orchestrator</strong> to generate AI-powered blog posts, then use <strong>Jekyll Sync</strong> to publish them to your static Jekyll site — a complete content-to-deployment pipeline.
 				</p>
 				<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
 					<div style="flex:1;min-width:250px;background:#f0f6fc;border:1px solid #c3c4c7;border-radius:4px;padding:16px;text-align:center;">
@@ -1007,7 +1007,7 @@ class WPJS_Admin {
 			<div class="card" style="padding:16px 20px;text-align:center;">
 				<p style="color:#50575e;font-size:13px;margin:0;">
 					<a href="https://raybogman.com" target="_blank" rel="noopener" style="color:#50575e;">raybogman.com</a> ·
-					All RayBogman plugins are built by <a href="https://linkedin.com/in/raybogman" target="_blank" rel="noopener" style="color:#50575e;">Ray Bogman</a>
+					All Ray Bogman plugins are built by <a href="https://linkedin.com/in/raybogman" target="_blank" rel="noopener" style="color:#50575e;">Ray Bogman</a>
 				</p>
 			</div>
 		</div>
@@ -1069,7 +1069,7 @@ class WPJS_Admin {
 		<div class="wrap">
 			<h1 class="wp-heading-inline">
 				<span class="dashicons dashicons-share-alt" style="font-size:28px;width:28px;height:28px;vertical-align:middle;margin-right:8px;"></span>
-				RayBogman – Jekyll Sync — Articles
+				Ray Bogman Jekyll Sync — Articles
 			</h1>
 			<hr class="wp-header-end" />
 
@@ -1345,7 +1345,7 @@ class WPJS_Admin {
 		<div class="wrap">
 			<h1>
 				<span class="dashicons dashicons-share-alt" style="font-size:28px;width:28px;height:28px;vertical-align:middle;margin-right:8px;"></span>
-				RayBogman – Jekyll Sync — Dashboard
+				Ray Bogman Jekyll Sync — Dashboard
 			</h1>
 
 			<div style="display:flex;gap:16px;flex-wrap:wrap;margin:16px 0;">
