@@ -30,12 +30,16 @@ class WPJS_Articles_Table extends WP_List_Table {
 	}
 
 	protected function get_bulk_actions() {
-		return array(
+		$actions = array(
 			'bulk_approve'   => 'Approve',
 			'bulk_unapprove' => 'Unapprove',
 			'bulk_push'      => 'Push to Jekyll',
 			'bulk_delete'    => 'Delete from Jekyll',
 		);
+		if ( WPJS_AI_Client::is_available() ) {
+			$actions['bulk_ai'] = 'Generate AI Metadata';
+		}
+		return $actions;
 	}
 
 	public function column_cb( $post ) {
@@ -151,6 +155,9 @@ class WPJS_Articles_Table extends WP_List_Table {
 			);
 			$buttons[] = sprintf( '<a href="%s" class="button">%s</a>', esc_url( $push_url ), $is_pushed ? 'Re-push' : 'Push now' );
 			$buttons[] = sprintf( '<button type="button" class="button wpjs-preview-btn" data-post-id="%d">Preview</button>', $post->ID );
+			if ( WPJS_AI_Client::is_available() ) {
+				$buttons[] = sprintf( '<button type="button" class="button wpjs-ai-btn" data-post-id="%d" title="Generate AI description &amp; alt text">AI</button>', $post->ID );
+			}
 			if ( $is_pushed ) {
 				$buttons[] = sprintf( '<button type="button" class="button wpjs-diff-btn" data-post-id="%d">Diff</button>', $post->ID );
 			}

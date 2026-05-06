@@ -4,7 +4,7 @@ Tags: jekyll, github, github-pages, static-site, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 5.4.0
+Stable tag: 5.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,12 @@ No — image URLs remain pointing at your WordPress media library.
 No. You control what gets published via the Approved toggle + explicit push.
 
 == Changelog ==
+
+= 5.5.0 =
+* **AI button per article** — generate AI description + image alt text before pushing, then preview the result.
+* **Bulk action "Generate AI Metadata"** — run AI on multiple selected posts at once.
+* AI generation now independent from push — run AI first, preview, then push when satisfied.
+* Tooltip shows AI summary after generation (description text, number of alt texts generated).
 
 = 5.4.0 =
 * AI settings redesigned — separate sections for Claude (Anthropic) and OpenAI (GPT), matching Content Orchestrator layout.

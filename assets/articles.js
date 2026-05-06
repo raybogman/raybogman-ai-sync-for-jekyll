@@ -82,6 +82,39 @@
 		});
 	});
 
+	/* ─── AI Generate ───────────────────────────────── */
+
+	$(document).on('click', '.wpjs-ai-btn', function () {
+		var btn    = $(this);
+		var postId = btn.data('post-id');
+		var orig   = btn.text();
+		btn.prop('disabled', true).text('Generating...');
+
+		$.post(wpjs.ajax_url, {
+			action:   'wpjs_generate_ai',
+			_wpnonce: wpjs.nonce,
+			post_id:  postId
+		}, function (res) {
+			if (!res.success) {
+				btn.prop('disabled', false).text(orig);
+				alert('AI failed: ' + res.data);
+				return;
+			}
+			btn.text('Done').css('color', '#00a32a');
+			setTimeout(function () {
+				btn.prop('disabled', false).text(orig).css('color', '');
+			}, 3000);
+			// Show summary in a tooltip-style popup.
+			var tip = $('<span style="position:absolute;background:#1d2327;color:#fff;padding:6px 10px;border-radius:4px;font-size:12px;z-index:9999;white-space:nowrap;"></span>');
+			tip.text(res.data.summary);
+			btn.parent().css('position', 'relative').append(tip);
+			tip.css({ bottom: '100%', left: 0, marginBottom: '4px' });
+			setTimeout(function () { tip.fadeOut(function () { tip.remove(); }); }, 4000);
+		}).fail(function () {
+			btn.prop('disabled', false).text(orig);
+		});
+	});
+
 	/* ─── Clear log ─────────────────────────────────── */
 
 	$(document).on('click', '#wpjs-clear-log', function () {

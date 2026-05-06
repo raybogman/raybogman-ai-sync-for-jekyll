@@ -24,6 +24,7 @@ class WPJS_Admin {
 		add_action( 'wp_ajax_wpjs_list_jekyll_posts', array( $this, 'ajax_list_jekyll_posts' ) );
 		add_action( 'wp_ajax_wpjs_pull_post', array( $this, 'ajax_pull_post' ) );
 		add_action( 'wp_ajax_wpjs_validate_ai', array( $this, 'ajax_validate_ai' ) );
+		add_action( 'wp_ajax_wpjs_generate_ai', array( $this, 'ajax_generate_ai' ) );
 		add_action( 'admin_notices', array( $this, 'notices' ) );
 	}
 
@@ -1231,6 +1232,10 @@ class WPJS_Admin {
 					$r = WPJS_Publisher::delete( $post );
 					if ( is_wp_error( $r ) ) { $fail++; } else { $ok++; }
 					break;
+				case 'bulk_ai':
+					WPJS_Publisher::generate_ai_metadata( $post );
+					$ok++;
+					break;
 			}
 		}
 
@@ -1239,6 +1244,7 @@ class WPJS_Admin {
 			'bulk_unapprove' => 'Unapproved',
 			'bulk_push'      => 'Pushed',
 			'bulk_delete'    => 'Deleted',
+			'bulk_ai'        => 'AI metadata generated',
 		);
 		$label = $labels[ $bulk ] ?? 'Processed';
 		$this->notice(
@@ -1521,6 +1527,32 @@ class WPJS_Admin {
 	}
 
 	/* ─── AJAX: clear log ────────────────────────────── */
+
+	public function ajax_generate_ai() {
+		check_ajax_referer( 'wpjs_ajax' );
+		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Permission denied.' ); }
+		$id   = isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0;
+		$post = $id ? get_post( $id ) : null;
+		if ( ! $post ) { wp_send_json_error( 'Post not found.' ); }
+
+		$results = WPJS_Publisher::generate_ai_metadata( $post );
+		$summary = array();
+		if ( $results['description'] ) {
+			$summary[] = 'Description: ' . $results['description'];
+		}
+		if ( $results['alt_texts'] ) {
+			$summary[] = count( $results['alt_texts'] ) . ' image alt text(s) generated';
+		}
+		if ( empty( $summary ) ) {
+			$summary[] = 'Nothing to generate — description and alt text already exist';
+		}
+
+		wp_send_json_success( array(
+			'summary' => implode( '. ', $summary ),
+			'description' => $results['description'],
+			'alt_count'   => count( $results['alt_texts'] ),
+		) );
+	}
 
 	public function ajax_validate_ai() {
 		check_ajax_referer( 'wpjs_ajax' );
