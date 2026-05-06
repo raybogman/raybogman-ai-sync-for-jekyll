@@ -4,7 +4,7 @@ Tags: jekyll, github, github-pages, static-site, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 5.7.0
+Stable tag: 5.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,11 @@ No — image URLs remain pointing at your WordPress media library.
 No. You control what gets published via the Approved toggle + explicit push.
 
 == Changelog ==
+
+= 5.8.0 =
+* Actions moved to row actions under the title (standard WP pattern — Edit | Push | Preview | AI | Diff | Delete).
+* Removed separate Actions column — 3 columns only: Title, Status, Synced.
+* Row actions appear on hover, fitting any screen width.
 
 = 5.7.0 =
 * Reduced to 4 columns: Title, Status, Synced, Actions — fits any screen.

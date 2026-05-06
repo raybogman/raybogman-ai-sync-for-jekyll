@@ -21,7 +21,6 @@ class WPJS_Articles_Table extends WP_List_Table {
 			'title'     => 'Title',
 			'status'    => 'Status',
 			'last_push' => 'Synced',
-			'actions'   => '',
 		);
 	}
 
@@ -91,10 +90,41 @@ class WPJS_Articles_Table extends WP_List_Table {
 		$author = esc_html( get_the_author_meta( 'display_name', $post->post_author ) );
 		$date   = esc_html( get_the_date( 'M j, Y', $post ) );
 		$type   = esc_html( $post->post_type );
+		$is_pushed = (bool) get_post_meta( $post->ID, WPJS_Publisher::META_LAST_PUSH, true );
+
+		// Build row actions.
+		$actions = array();
+		$actions['edit'] = sprintf( '<a href="%s">Edit</a>', esc_url( $edit ) );
+
+		if ( $post->post_status === 'publish' ) {
+			$push_url = wp_nonce_url(
+				admin_url( 'admin-post.php?action=wpjs_publish_one&post_id=' . $post->ID ),
+				'wpjs_publish_one_' . $post->ID
+			);
+			$actions['push'] = sprintf( '<a href="%s">%s</a>', esc_url( $push_url ), $is_pushed ? 'Re-push' : 'Push' );
+			$actions['preview'] = sprintf( '<a href="#" class="wpjs-preview-btn" data-post-id="%d">Preview</a>', $post->ID );
+
+			if ( WPJS_AI_Client::is_available() ) {
+				$actions['ai'] = sprintf( '<a href="#" class="wpjs-ai-btn" data-post-id="%d">AI Generate</a>', $post->ID );
+			}
+			if ( $is_pushed ) {
+				$actions['diff'] = sprintf( '<a href="#" class="wpjs-diff-btn" data-post-id="%d">Diff</a>', $post->ID );
+			}
+		}
+
+		if ( $is_pushed ) {
+			$del_url = wp_nonce_url(
+				admin_url( 'admin-post.php?action=wpjs_delete_one&post_id=' . $post->ID ),
+				'wpjs_delete_one_' . $post->ID
+			);
+			$actions['delete'] = sprintf( '<a href="%s" style="color:#d63638;" onclick="return confirm(\'Delete from Jekyll?\');">Delete</a>', esc_url( $del_url ) );
+		}
+
+		$row_actions = $this->row_actions( $actions );
 
 		return sprintf(
-			'<span style="display:inline-flex;align-items:center;">%s<strong><a href="%s">%s</a></strong></span><br><span class="description">%s &middot; %s &middot; %s</span>',
-			$img, esc_url( $edit ), $title, $type, $author, $date
+			'<span style="display:inline-flex;align-items:center;">%s<strong><a class="row-title" href="%s">%s</a></strong></span><br><span class="description">%s &middot; %s &middot; %s</span>%s',
+			$img, esc_url( $edit ), $title, $type, $author, $date, $row_actions
 		);
 	}
 
@@ -136,62 +166,7 @@ class WPJS_Articles_Table extends WP_List_Table {
 		return '<span title="' . esc_attr( $t ) . '">' . esc_html( $ago ) . ' ago</span>';
 	}
 
-	public function column_actions( $post ) {
-		$is_pushed = (bool) get_post_meta( $post->ID, WPJS_Publisher::META_LAST_PUSH, true );
-		$buttons   = array();
 
-		if ( $post->post_status === 'publish' ) {
-			// Push.
-			$push_url = wp_nonce_url(
-				admin_url( 'admin-post.php?action=wpjs_publish_one&post_id=' . $post->ID ),
-				'wpjs_publish_one_' . $post->ID
-			);
-			$push_icon  = $is_pushed ? 'dashicons-update' : 'dashicons-cloud-upload';
-			$push_title = $is_pushed ? 'Re-push to Jekyll' : 'Push to Jekyll';
-			$buttons[] = sprintf(
-				'<a href="%s" class="button" title="%s" style="padding:0 6px;min-width:auto;"><span class="dashicons %s" style="font-size:16px;width:16px;height:16px;line-height:28px;"></span></a>',
-				esc_url( $push_url ), esc_attr( $push_title ), esc_attr( $push_icon )
-			);
-
-			// Preview.
-			$buttons[] = sprintf(
-				'<button type="button" class="button wpjs-preview-btn" data-post-id="%d" title="Preview Markdown" style="padding:0 6px;min-width:auto;"><span class="dashicons dashicons-visibility" style="font-size:16px;width:16px;height:16px;line-height:28px;"></span></button>',
-				$post->ID
-			);
-
-			// AI.
-			if ( WPJS_AI_Client::is_available() ) {
-				$buttons[] = sprintf(
-					'<button type="button" class="button wpjs-ai-btn" data-post-id="%d" title="Generate AI description &amp; alt text" style="padding:0 6px;min-width:auto;"><span class="dashicons dashicons-superhero-alt" style="font-size:16px;width:16px;height:16px;line-height:28px;"></span></button>',
-					$post->ID
-				);
-			}
-
-			// Diff (only for pushed).
-			if ( $is_pushed ) {
-				$buttons[] = sprintf(
-					'<button type="button" class="button wpjs-diff-btn" data-post-id="%d" title="Diff with Jekyll" style="padding:0 6px;min-width:auto;"><span class="dashicons dashicons-editor-code" style="font-size:16px;width:16px;height:16px;line-height:28px;"></span></button>',
-					$post->ID
-				);
-			}
-		} else {
-			$buttons[] = '<span class="description" style="font-size:12px;">Draft</span>';
-		}
-
-		// Delete (only for pushed).
-		if ( $is_pushed ) {
-			$del_url = wp_nonce_url(
-				admin_url( 'admin-post.php?action=wpjs_delete_one&post_id=' . $post->ID ),
-				'wpjs_delete_one_' . $post->ID
-			);
-			$buttons[] = sprintf(
-				'<a href="%s" class="button" title="Delete from Jekyll" style="padding:0 6px;min-width:auto;color:#d63638;" onclick="return confirm(\'Delete from Jekyll?\');"><span class="dashicons dashicons-trash" style="font-size:16px;width:16px;height:16px;line-height:28px;"></span></a>',
-				esc_url( $del_url )
-			);
-		}
-
-		return '<div style="display:flex;gap:2px;align-items:center;">' . implode( '', $buttons ) . '</div>';
-	}
 
 	protected function extra_tablenav( $which ) {
 		if ( $which !== 'top' ) { return; }

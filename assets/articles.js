@@ -7,7 +7,8 @@
 	var content = $('#wpjs-preview-content');
 	var title   = $('#wpjs-preview-title');
 
-	$(document).on('click', '.wpjs-preview-btn', function () {
+	$(document).on('click', '.wpjs-preview-btn', function (e) {
+		e.preventDefault();
 		var postId = $(this).data('post-id');
 		content.html('Loading...');
 		title.text('Markdown Preview');
@@ -31,7 +32,8 @@
 
 	/* ─── Diff modal ────────────────────────────────── */
 
-	$(document).on('click', '.wpjs-diff-btn', function () {
+	$(document).on('click', '.wpjs-diff-btn', function (e) {
+		e.preventDefault();
 		var postId = $(this).data('post-id');
 		content.html('Loading diff...');
 		title.text('Diff View');
@@ -84,7 +86,8 @@
 
 	/* ─── AI Generate ───────────────────────────────── */
 
-	$(document).on('click', '.wpjs-ai-btn', function () {
+	$(document).on('click', '.wpjs-ai-btn', function (e) {
+		e.preventDefault();
 		var btn    = $(this);
 		var postId = btn.data('post-id');
 		var orig   = btn.text();
