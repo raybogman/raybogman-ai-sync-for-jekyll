@@ -35,6 +35,8 @@ class WPJS_Converter {
 
 		$layout = $post->post_type === 'page' ? 'page' : 'post';
 
+		$seo = self::get_seo_meta( $post );
+
 		$front_matter = array(
 			'layout' => $layout,
 			'title'  => $title,
@@ -42,7 +44,9 @@ class WPJS_Converter {
 			'slug'   => $slug,
 			'author' => $author,
 		);
-		if ( $excerpt ) { $front_matter['description'] = $excerpt; }
+		if ( $seo['description'] ) { $front_matter['description'] = $seo['description']; }
+		elseif ( $excerpt ) { $front_matter['description'] = $excerpt; }
+		if ( $seo['keywords'] ) { $front_matter['keywords'] = $seo['keywords']; }
 		if ( $jekyll_image_path ) { $front_matter['featured_image'] = $jekyll_image_path; }
 		if ( $categories ) { $front_matter['categories'] = $categories; }
 		if ( $tags ) { $front_matter['tags'] = $tags; }
@@ -76,6 +80,8 @@ class WPJS_Converter {
 			if ( $tag_objs ) { $tags = wp_list_pluck( $tag_objs, 'name' ); }
 		}
 
+		$seo = self::get_seo_meta( $post );
+
 		// Build a data map for front matter fields.
 		$data_map = array(
 			'layout'         => $layout,
@@ -84,7 +90,8 @@ class WPJS_Converter {
 			'slug'           => $slug,
 			'author'         => $author,
 			'excerpt'        => $excerpt,
-			'description'    => $excerpt,
+			'description'    => $seo['description'] ?: $excerpt,
+			'keywords'       => $seo['keywords'],
 			'featured_image' => $jekyll_image_path,
 			'image'          => $jekyll_image_path,
 			'categories'     => $categories,
@@ -134,6 +141,37 @@ class WPJS_Converter {
 		);
 	}
 
+	private static function get_seo_meta( WP_Post $post ) {
+		$meta = array(
+			'seo_title'   => '',
+			'description' => '',
+			'keywords'    => '',
+		);
+
+		// Yoast SEO.
+		$yoast_title = get_post_meta( $post->ID, '_yoast_wpseo_title', true );
+		$yoast_desc  = get_post_meta( $post->ID, '_yoast_wpseo_metadesc', true );
+		$yoast_kw    = get_post_meta( $post->ID, '_yoast_wpseo_focuskw', true );
+		if ( $yoast_title ) { $meta['seo_title'] = $yoast_title; }
+		if ( $yoast_desc )  { $meta['description'] = $yoast_desc; }
+		if ( $yoast_kw )    { $meta['keywords'] = $yoast_kw; }
+
+		// RankMath (overrides Yoast if both present).
+		$rm_title = get_post_meta( $post->ID, 'rank_math_title', true );
+		$rm_desc  = get_post_meta( $post->ID, 'rank_math_description', true );
+		$rm_kw    = get_post_meta( $post->ID, 'rank_math_focus_keyword', true );
+		if ( $rm_title ) { $meta['seo_title'] = $rm_title; }
+		if ( $rm_desc )  { $meta['description'] = $rm_desc; }
+		if ( $rm_kw )    { $meta['keywords'] = $rm_kw; }
+
+		// Fallback: excerpt for description.
+		if ( ! $meta['description'] ) {
+			$meta['description'] = has_excerpt( $post ) ? get_the_excerpt( $post ) : '';
+		}
+
+		return $meta;
+	}
+
 	public static function filename( WP_Post $post ) {
 		$slug = $post->post_name ?: sanitize_title( $post->post_title );
 		if ( $post->post_type === 'page' ) {
@@ -170,6 +208,20 @@ class WPJS_Converter {
 		$html = preg_replace( '/<!--.*?-->/s', '', $html );
 		$html = preg_replace( '/\s+/', ' ', $html );
 
+		// Process images FIRST (before inline formatting strips them).
+		$html = preg_replace_callback( '/<img\s[^>]*>/i', array( __CLASS__, 'convert_img_tag' ), $html );
+
+		// Pre/code blocks (before inline patterns consume backticks).
+		$html = preg_replace_callback( '/<pre[^>]*>(.*?)<\/pre>/is', function ( $m ) {
+			$code = html_entity_decode( wp_strip_all_tags( $m[1] ), ENT_QUOTES | ENT_HTML5 );
+			return "\n```\n" . trim( $code ) . "\n```\n\n";
+		}, $html );
+
+		// Links (before inline formatting strips anchor tags).
+		$html = preg_replace_callback( '/<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)<\/a>/is', function ( $m ) {
+			return '[' . wp_strip_all_tags( $m[2] ) . '](' . $m[1] . ')';
+		}, $html );
+
 		$patterns = array(
 			'/<h1[^>]*>(.*?)<\/h1>/is'       => "\n# $1\n\n",
 			'/<h2[^>]*>(.*?)<\/h2>/is'       => "\n## $1\n\n",
@@ -188,24 +240,6 @@ class WPJS_Converter {
 			$html = preg_replace( $pat, $rep, $html );
 		}
 
-		$html = preg_replace_callback( '/<pre[^>]*>(.*?)<\/pre>/is', function ( $m ) {
-			$code = html_entity_decode( wp_strip_all_tags( $m[1] ), ENT_QUOTES | ENT_HTML5 );
-			return "\n```\n" . trim( $code ) . "\n```\n\n";
-		}, $html );
-
-		$html = preg_replace_callback( '/<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)<\/a>/is', function ( $m ) {
-			return '[' . wp_strip_all_tags( $m[2] ) . '](' . $m[1] . ')';
-		}, $html );
-
-		$html = preg_replace_callback( '/<img\s[^>]*>/i', function ( $m ) {
-			$tag = $m[0];
-			preg_match( '/src=["\']([^"\']+)["\']/i', $tag, $src );
-			preg_match( '/alt=["\']([^"\']*)["\']/i', $tag, $alt );
-			$src_url = $src[1] ?? '';
-			$alt_txt = $alt[1] ?? '';
-			return '![' . $alt_txt . '](' . $src_url . ')';
-		}, $html );
-
 		$html = preg_replace_callback( '/<ul[^>]*>(.*?)<\/ul>/is', function ( $m ) {
 			$items = preg_replace( '/<li[^>]*>(.*?)<\/li>/is', "- $1\n", $m[1] );
 			return "\n" . trim( wp_kses( $items, array( 'a' => array( 'href' => array() ), 'strong' => array(), 'em' => array(), 'code' => array() ) ) ) . "\n\n";
@@ -220,15 +254,57 @@ class WPJS_Converter {
 			return "\n" . trim( wp_kses( $list, array( 'a' => array( 'href' => array() ), 'strong' => array(), 'em' => array(), 'code' => array() ) ) ) . "\n\n";
 		}, $html );
 
+		return self::finalize_markdown( $html );
+	}
+
+	/* ─── Style-aware methods ────────────────────────── */
+
+	private static function convert_img_tag( $m ) {
+		$tag = $m[0];
+		preg_match( '/src=["\']([^"\']+)["\']/i', $tag, $src );
+		preg_match( '/alt=["\']([^"\']*)["\']/i', $tag, $alt );
+		preg_match( '/class=["\']([^"\']*)["\']/', $tag, $cls );
+		preg_match( '/width=["\']([^"\']*)["\']/', $tag, $w );
+		preg_match( '/height=["\']([^"\']*)["\']/', $tag, $h );
+		$src_url = $src[1] ?? '';
+		$alt_txt = $alt[1] ?? '';
+		$classes = $cls[1] ?? '';
+
+		// Preserve as HTML if image has alignment classes.
+		if ( preg_match( '/align(left|right|center|none)/', $classes ) ) {
+			$style = '';
+			if ( strpos( $classes, 'alignright' ) !== false ) {
+				$style = 'float:right;margin:0 0 16px 16px;';
+			} elseif ( strpos( $classes, 'alignleft' ) !== false ) {
+				$style = 'float:left;margin:0 16px 16px 0;';
+			} elseif ( strpos( $classes, 'aligncenter' ) !== false ) {
+				$style = 'display:block;margin:0 auto 16px;';
+			}
+			$width  = ! empty( $w[1] ) ? ' width="' . $w[1] . '"' : '';
+			$height = ! empty( $h[1] ) ? ' height="' . $h[1] . '"' : '';
+			return '<img src="' . esc_url( $src_url ) . '" alt="' . esc_attr( $alt_txt ) . '"' . $width . $height . ' style="' . $style . '" />';
+		}
+
+		return '![' . $alt_txt . '](' . $src_url . ')';
+	}
+
+	private static function finalize_markdown( $html ) {
 		$html = preg_replace( '/<p[^>]*>(.*?)<\/p>/is', "$1\n\n", $html );
 
+		// Protect preserved HTML img tags from being stripped.
+		$img_placeholders = array();
+		$html = preg_replace_callback( '/<img\s[^>]*\/?>/', function ( $m ) use ( &$img_placeholders ) {
+			$key = '%%WPJS_IMG_' . count( $img_placeholders ) . '%%';
+			$img_placeholders[ $key ] = $m[0];
+			return $key;
+		}, $html );
+
 		$text = html_entity_decode( wp_strip_all_tags( $html ), ENT_QUOTES | ENT_HTML5 );
+		$text = str_replace( array_keys( $img_placeholders ), array_values( $img_placeholders ), $text );
 		$text = preg_replace( "/\n{3,}/", "\n\n", $text );
 
 		return trim( $text );
 	}
-
-	/* ─── Style-aware methods ────────────────────────── */
 
 	private static function yaml_styled( array $data, $array_style = 'block' ) {
 		$out = '';
@@ -261,6 +337,20 @@ class WPJS_Converter {
 		$html = preg_replace( '/<!--.*?-->/s', '', $html );
 		$html = preg_replace( '/\s+/', ' ', $html );
 
+		// Process images FIRST (before inline formatting strips them).
+		$html = preg_replace_callback( '/<img\s[^>]*>/i', array( __CLASS__, 'convert_img_tag' ), $html );
+
+		// Pre/code blocks (before inline patterns).
+		$html = preg_replace_callback( '/<pre[^>]*>(.*?)<\/pre>/is', function ( $m ) use ( $fence ) {
+			$code = html_entity_decode( wp_strip_all_tags( $m[1] ), ENT_QUOTES | ENT_HTML5 );
+			return "\n" . $fence . "\n" . trim( $code ) . "\n" . $fence . "\n\n";
+		}, $html );
+
+		// Links (before inline formatting).
+		$html = preg_replace_callback( '/<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)<\/a>/is', function ( $m ) {
+			return '[' . wp_strip_all_tags( $m[2] ) . '](' . $m[1] . ')';
+		}, $html );
+
 		// Headings.
 		if ( $h_style === 'setext' ) {
 			$html = preg_replace_callback( '/<h1[^>]*>(.*?)<\/h1>/is', function ( $m ) {
@@ -287,23 +377,6 @@ class WPJS_Converter {
 		$html = preg_replace( '/<hr\s*\/?>/i', "\n" . $hr . "\n", $html );
 		$html = preg_replace( '/<blockquote[^>]*>(.*?)<\/blockquote>/is', "\n> $1\n\n", $html );
 
-		// Pre/code blocks.
-		$html = preg_replace_callback( '/<pre[^>]*>(.*?)<\/pre>/is', function ( $m ) use ( $fence ) {
-			$code = html_entity_decode( wp_strip_all_tags( $m[1] ), ENT_QUOTES | ENT_HTML5 );
-			return "\n" . $fence . "\n" . trim( $code ) . "\n" . $fence . "\n\n";
-		}, $html );
-
-		// Links and images.
-		$html = preg_replace_callback( '/<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)<\/a>/is', function ( $m ) {
-			return '[' . wp_strip_all_tags( $m[2] ) . '](' . $m[1] . ')';
-		}, $html );
-
-		$html = preg_replace_callback( '/<img\s[^>]*>/i', function ( $m ) {
-			preg_match( '/src=["\']([^"\']+)["\']/i', $m[0], $src );
-			preg_match( '/alt=["\']([^"\']*)["\']/i', $m[0], $alt );
-			return '![' . ( $alt[1] ?? '' ) . '](' . ( $src[1] ?? '' ) . ')';
-		}, $html );
-
 		// Lists.
 		$html = preg_replace_callback( '/<ul[^>]*>(.*?)<\/ul>/is', function ( $m ) use ( $ul ) {
 			$items = preg_replace( '/<li[^>]*>(.*?)<\/li>/is', $ul . " $1\n", $m[1] );
@@ -319,12 +392,7 @@ class WPJS_Converter {
 			return "\n" . trim( wp_kses( $list, array( 'a' => array( 'href' => array() ), 'strong' => array(), 'em' => array(), 'code' => array() ) ) ) . "\n\n";
 		}, $html );
 
-		$html = preg_replace( '/<p[^>]*>(.*?)<\/p>/is', "$1\n\n", $html );
-
-		$text = html_entity_decode( wp_strip_all_tags( $html ), ENT_QUOTES | ENT_HTML5 );
-		$text = preg_replace( "/\n{3,}/", "\n\n", $text );
-
-		return trim( $text );
+		return self::finalize_markdown( $html );
 	}
 
 	/* ─── URL rewriting ──────────────────────────────── */

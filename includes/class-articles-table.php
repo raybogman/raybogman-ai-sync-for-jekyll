@@ -151,6 +151,9 @@ class WPJS_Articles_Table extends WP_List_Table {
 			);
 			$buttons[] = sprintf( '<a href="%s" class="button">%s</a>', esc_url( $push_url ), $is_pushed ? 'Re-push' : 'Push now' );
 			$buttons[] = sprintf( '<button type="button" class="button wpjs-preview-btn" data-post-id="%d">Preview</button>', $post->ID );
+			if ( $is_pushed ) {
+				$buttons[] = sprintf( '<button type="button" class="button wpjs-diff-btn" data-post-id="%d">Diff</button>', $post->ID );
+			}
 		} else {
 			$buttons[] = '<em>publish to enable</em>';
 		}

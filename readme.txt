@@ -1,10 +1,10 @@
-=== RayAI – Jekyll Sync ===
+=== RayBogman – Jekyll Sync ===
 Contributors: raybogman
 Tags: jekyll, github, github-pages, static-site, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.3.0
+Stable tag: 5.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Push WordPress posts and pages to a Jekyll GitHub Pages repository as Markdown w
 
 == Description ==
 
-RayAI Jekyll Sync lets you edit content in WordPress and publish it to a Jekyll site hosted on GitHub Pages.
+RayBogman Jekyll Sync lets you edit content in WordPress and publish it to a Jekyll site hosted on GitHub Pages.
 
 Features:
 
@@ -60,15 +60,70 @@ No. You control what gets published via the Approved toggle + explicit push.
 
 == Changelog ==
 
+= 5.1.0 =
+* Renamed plugin from "RayAI – Jekyll Sync" to "RayBogman – Jekyll Sync" with slug `raybogman-jekyll-sync`.
+* Updated all display strings, page titles, and metadata to reflect the new brand name.
+* Kept internal class names, option keys, and constants unchanged.
+
+= 5.0.0 =
+* **AI Description Generator** — auto-generates SEO meta descriptions for posts missing excerpts and Yoast/RankMath descriptions. AI summarizes the post in 1-2 sentences (max 160 chars), saved as WP excerpt + Jekyll front matter.
+* **AI Image Alt Text** — auto-generates alt text for images missing it using AI vision (Claude/OpenAI). Works for featured images and inline body images. Alt text saved back to WP attachment meta.
+* **Shared API keys** — automatically detects and uses Claude/OpenAI API keys from RayAI Content Orchestrator if installed. Own API key field shown as fallback.
+* New AI Features card on Connection tab with toggles, provider auto-detection, API key validation.
+* New `class-ai-client.php` with Claude Messages API and OpenAI Chat Completions API including vision support.
+
+= 4.6.0 =
+* Fixed inline images disappearing — images are now processed BEFORE inline formatting (bold/italic) to prevent `<strong>` wrapping from consuming the `<img>` tag.
+* Shared `convert_img_tag()` method used by both standard and styled converters.
+* `finalize_markdown()` helper preserves HTML `<img>` tags through the final `wp_strip_all_tags()` using placeholders.
+* Removed duplicate pre/link/img handlers in styled converter.
+
+= 4.5.0 =
+* **Image alignment preserved** — WP classes `alignright`, `alignleft`, `aligncenter` converted to inline CSS styles in HTML `<img>` tags instead of plain Markdown `![]()`
+* Width and height attributes preserved from original HTML.
+* Both standard and style-aware converters updated.
+
+= 4.4.0 =
+* Fixed inline image sync — now catches `/wp-content/uploads/` URLs regardless of domain (WP or already-rewritten Jekyll domain).
+* Converts rewritten Jekyll URLs back to WP URLs for media library lookup.
+* Handles WordPress image size suffixes (e.g. `image-300x300.png` → finds `image.png` in media library).
+* Falls back to HTTP download if local file not found.
+
+= 4.3.0 =
+* **Inline body images now synced to Jekyll** — all images inside post content are uploaded to `assets/images/` and their URLs rewritten to Jekyll-native paths.
+* Supports images from WP media library (read from disk) and remote WP URLs (downloaded).
+* Handles jpg, jpeg, png, gif, webp, svg formats.
+* Each inline image committed individually with descriptive commit message.
+
+= 4.2.0 =
+* Fixed Pull tab JS not loading — articles.js now enqueued on Settings page too.
+* Added "Import All New" button to pull all new Jekyll posts at once.
+* Green summary banner after pulling: "Imported/updated X post(s) from Jekyll" with links to View Draft Posts and View Articles.
+
+= 4.1.0 =
+* **Scheduled Auto-Sync** — WP-Cron based, configurable interval (1/6/12/24 hours). Modes: approved & outdated only, or all published. Shows next run time on Connection tab.
+* **Two-way Sync (Pull from Jekyll)** — new "Pull from Jekyll" tab lists all posts in the Jekyll repo, shows which exist in WP, Import/Update buttons. Markdown converted back to HTML with front matter parsed.
+* Cron rescheduled automatically when settings are saved.
+
+= 4.0.0 =
+* **Dashboard** — stats overview: Total Posts/Pages, Published, Outdated, Not Published, Approved with color-coded cards.
+* **Sync History Log** — tracks every push/delete with timestamp, user, post, path, result. New "Log" tab in Settings. Max 500 entries with Clear Log button.
+* **Diff View** — compare current WP content with what's on Jekyll before pushing. Color-coded additions (green) and deletions (red).
+* **SEO Metadata Mapping** — auto-detects Yoast SEO and RankMath. Maps meta title, description, and focus keywords to Jekyll front matter.
+* **GitHub Actions Trigger** — optionally trigger a Jekyll build workflow after each push. Configure workflow filename on Connection tab.
+* **Auto-push on Publish** — hook into WordPress publish action to auto-push posts/pages when published or updated.
+* Dashboard is now the main landing page under the Jekyll Sync menu.
+* Delete actions refactored to use Publisher::delete() with logging.
+
 = 3.3.0 =
-* Added **More by RayAI** tab showcasing the RayAI plugin ecosystem.
+* Added **More by RayBogman** tab showcasing the RayBogman plugin ecosystem.
 * Content Orchestrator product card with features, pricing table, and install detection.
 * Jekyll Sync card with ACTIVE badge.
-* RayAI Ecosystem visual pipeline: Create → Publish → Live.
+* RayBogman Ecosystem visual pipeline: Create → Publish → Live.
 
 = 3.2.0 =
 * Fixed duplicate FAQ tab in navigation.
-* Branded page title: "RayAI – Jekyll Sync — Settings" with dashicon on all pages.
+* Branded page title: "RayBogman – Jekyll Sync — Settings" with dashicon on all pages.
 * Renamed "Content Style" tab to "Formatting".
 * FAQ and About tabs now use full page width.
 
@@ -78,7 +133,7 @@ No. You control what gets published via the Approved toggle + explicit push.
 * FAQ and About tabs visible even when not connected to GitHub.
 
 = 3.0.0 =
-* Renamed plugin to "RayAI Jekyll Sync" with slug `rayai-jekyll-sync` for WP.org trademark compliance.
+* Renamed plugin to "RayBogman Jekyll Sync" with slug `raybogman-jekyll-sync` for WP.org trademark compliance.
 * Fixed all Plugin Check warnings with proper phpcs:ignore annotations.
 * Major version bump for the rename.
 

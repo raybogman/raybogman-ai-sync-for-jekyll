@@ -51,6 +51,30 @@ class WPJS_Settings {
 		if ( array_key_exists( 'jekyll_base_url', $input ) ) {
 			$existing['jekyll_base_url'] = rtrim( esc_url_raw( $input['jekyll_base_url'] ), '/' );
 		}
+		if ( array_key_exists( 'workflow_file', $input ) ) {
+			$existing['workflow_file'] = sanitize_text_field( $input['workflow_file'] );
+		}
+		if ( array_key_exists( 'auto_push_on_publish', $input ) ) {
+			$existing['auto_push_on_publish'] = ! empty( $input['auto_push_on_publish'] ) ? '1' : '0';
+		}
+		if ( array_key_exists( 'sync_interval_hours', $input ) ) {
+			$existing['sync_interval_hours'] = absint( $input['sync_interval_hours'] );
+		}
+		if ( array_key_exists( 'sync_cron_mode', $input ) ) {
+			$existing['sync_cron_mode'] = sanitize_text_field( $input['sync_cron_mode'] );
+		}
+		if ( array_key_exists( 'ai_generate_descriptions', $input ) ) {
+			$existing['ai_generate_descriptions'] = ! empty( $input['ai_generate_descriptions'] ) ? '1' : '0';
+		}
+		if ( array_key_exists( 'ai_generate_alt_text', $input ) ) {
+			$existing['ai_generate_alt_text'] = ! empty( $input['ai_generate_alt_text'] ) ? '1' : '0';
+		}
+		if ( array_key_exists( 'ai_api_key', $input ) ) {
+			$existing['ai_api_key'] = sanitize_text_field( $input['ai_api_key'] );
+		}
+		if ( array_key_exists( 'ai_provider', $input ) ) {
+			$existing['ai_provider'] = sanitize_text_field( $input['ai_provider'] );
+		}
 
 		// Conversion mode (Content Style tab).
 		if ( array_key_exists( 'conversion_mode', $input ) ) {

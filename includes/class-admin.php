@@ -19,6 +19,11 @@ class WPJS_Admin {
 		add_action( 'wp_ajax_wpjs_validate', array( $this, 'ajax_validate' ) );
 		add_action( 'wp_ajax_wpjs_detect_style', array( $this, 'ajax_detect_style' ) );
 		add_action( 'wp_ajax_wpjs_save_style_profile', array( $this, 'ajax_save_style_profile' ) );
+		add_action( 'wp_ajax_wpjs_diff', array( $this, 'ajax_diff' ) );
+		add_action( 'wp_ajax_wpjs_clear_log', array( $this, 'ajax_clear_log' ) );
+		add_action( 'wp_ajax_wpjs_list_jekyll_posts', array( $this, 'ajax_list_jekyll_posts' ) );
+		add_action( 'wp_ajax_wpjs_pull_post', array( $this, 'ajax_pull_post' ) );
+		add_action( 'wp_ajax_wpjs_validate_ai', array( $this, 'ajax_validate_ai' ) );
 		add_action( 'admin_notices', array( $this, 'notices' ) );
 	}
 
@@ -27,13 +32,26 @@ class WPJS_Admin {
 	private $settings_hook = '';
 	private $articles_hook = '';
 
+	private $dashboard_hook = '';
+
 	public function menu() {
-		$this->articles_hook = add_menu_page( 'Jekyll Sync', 'Jekyll Sync', 'manage_options', 'wpjs-articles', array( $this, 'render_articles' ), 'dashicons-share-alt', 30 );
-		add_submenu_page( 'wpjs-articles', 'Articles', 'Articles', 'manage_options', 'wpjs-articles', array( $this, 'render_articles' ) );
-		$this->settings_hook = add_submenu_page( 'wpjs-articles', 'Settings', 'Settings', 'manage_options', 'wpjs-settings', array( $this, 'render_settings' ) );
+		$this->dashboard_hook = add_menu_page( 'Jekyll Sync', 'Jekyll Sync', 'manage_options', 'wpjs-dashboard', array( $this, 'render_dashboard' ), 'dashicons-share-alt', 30 );
+		add_submenu_page( 'wpjs-dashboard', 'Dashboard', 'Dashboard', 'manage_options', 'wpjs-dashboard', array( $this, 'render_dashboard' ) );
+		$this->articles_hook = add_submenu_page( 'wpjs-dashboard', 'Articles', 'Articles', 'manage_options', 'wpjs-articles', array( $this, 'render_articles' ) );
+		$this->settings_hook = add_submenu_page( 'wpjs-dashboard', 'Settings', 'Settings', 'manage_options', 'wpjs-settings', array( $this, 'render_settings' ) );
 	}
 
 	public function enqueue( $hook ) {
+		// Dashboard page JS.
+		if ( $hook === $this->dashboard_hook ) {
+			wp_enqueue_script( 'wpjs-articles', WPJS_URL . 'assets/articles.js', array( 'jquery', 'wp-util' ), WPJS_VERSION, true );
+			wp_localize_script( 'wpjs-articles', 'wpjs', array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'nonce'    => wp_create_nonce( 'wpjs_ajax' ),
+			) );
+			return;
+		}
+
 		// Articles page JS.
 		if ( $hook === $this->articles_hook ) {
 			wp_enqueue_script( 'wpjs-articles', WPJS_URL . 'assets/articles.js', array( 'jquery', 'wp-util' ), WPJS_VERSION, true );
@@ -64,6 +82,7 @@ class WPJS_Admin {
 		// Settings page JS.
 		if ( $hook !== $this->settings_hook ) { return; }
 		wp_enqueue_script( 'wpjs-settings', WPJS_URL . 'assets/settings.js', array( 'jquery' ), WPJS_VERSION, true );
+		wp_enqueue_script( 'wpjs-articles', WPJS_URL . 'assets/articles.js', array( 'jquery' ), WPJS_VERSION, true );
 		wp_localize_script( 'wpjs-settings', 'wpjs', array(
 			'ajax_url'      => admin_url( 'admin-ajax.php' ),
 			'nonce'         => wp_create_nonce( 'wpjs_ajax' ),
@@ -196,13 +215,13 @@ class WPJS_Admin {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Tab navigation, no data processing.
 		$active_tab = sanitize_text_field( wp_unslash( $_GET['tab'] ?? 'connection' ) );
 		if ( ! $connected && ! in_array( $active_tab, array( 'faq', 'about', 'products' ), true ) ) { $active_tab = 'connection'; }
-		$valid_tabs = array( 'connection', 'content', 'style', 'faq', 'about', 'products' );
+		$valid_tabs = array( 'connection', 'content', 'style', 'log', 'pull', 'faq', 'about', 'products' );
 		if ( ! in_array( $active_tab, $valid_tabs, true ) ) { $active_tab = 'connection'; }
 		?>
 		<div class="wrap">
 			<h1>
 				<span class="dashicons dashicons-share-alt" style="font-size:28px;width:28px;height:28px;vertical-align:middle;margin-right:8px;"></span>
-				RayAI – Jekyll Sync — Settings
+				RayBogman – Jekyll Sync — Settings
 			</h1>
 
 			<nav class="nav-tab-wrapper" style="margin-bottom:16px;">
@@ -213,13 +232,17 @@ class WPJS_Admin {
 				   class="nav-tab <?php echo $active_tab === 'content' ? 'nav-tab-active' : ''; ?>">Content</a>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=wpjs-settings&tab=style' ) ); ?>"
 				   class="nav-tab <?php echo $active_tab === 'style' ? 'nav-tab-active' : ''; ?>">Formatting</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=wpjs-settings&tab=log' ) ); ?>"
+				   class="nav-tab <?php echo $active_tab === 'log' ? 'nav-tab-active' : ''; ?>">Log</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=wpjs-settings&tab=pull' ) ); ?>"
+				   class="nav-tab <?php echo $active_tab === 'pull' ? 'nav-tab-active' : ''; ?>">Pull from Jekyll</a>
 			<?php endif; ?>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=wpjs-settings&tab=faq' ) ); ?>"
 				   class="nav-tab <?php echo $active_tab === 'faq' ? 'nav-tab-active' : ''; ?>">FAQ</a>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=wpjs-settings&tab=about' ) ); ?>"
 				   class="nav-tab <?php echo $active_tab === 'about' ? 'nav-tab-active' : ''; ?>">About</a>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=wpjs-settings&tab=products' ) ); ?>"
-				   class="nav-tab <?php echo $active_tab === 'products' ? 'nav-tab-active' : ''; ?>">More by RayAI</a>
+				   class="nav-tab <?php echo $active_tab === 'products' ? 'nav-tab-active' : ''; ?>">More by RayBogman</a>
 			</nav>
 
 			<?php if ( ! $connected ) : ?>
@@ -323,9 +346,103 @@ class WPJS_Admin {
 									<div id="wpjs-validate-result" style="margin-top:8px;"></div>
 								</td>
 							</tr>
+							<tr>
+								<th><label>GitHub Actions Workflow</label></th>
+								<td>
+									<input type="text" name="workflow_file" value="<?php echo esc_attr( WPJS_Settings::get( 'workflow_file', '' ) ); ?>" class="regular-text" placeholder="jekyll.yml" />
+									<p class="description">Optional. Enter the workflow filename to trigger a Jekyll build after each push.</p>
+								</td>
+							</tr>
+							<tr>
+								<th>Auto-push on Publish</th>
+								<td>
+									<label>
+										<input type="checkbox" name="auto_push_on_publish" value="1" <?php checked( WPJS_Settings::get( 'auto_push_on_publish', '0' ), '1' ); ?> />
+										Automatically push to Jekyll when a post or page is published or updated
+									</label>
+								</td>
+							</tr>
+							<tr>
+								<th><label>Scheduled Sync</label></th>
+								<td>
+									<select name="sync_interval_hours" style="width:auto;">
+										<option value="0" <?php selected( WPJS_Settings::get( 'sync_interval_hours', '0' ), '0' ); ?>>Disabled</option>
+										<option value="1" <?php selected( WPJS_Settings::get( 'sync_interval_hours', '0' ), '1' ); ?>>Every 1 hour</option>
+										<option value="6" <?php selected( WPJS_Settings::get( 'sync_interval_hours', '0' ), '6' ); ?>>Every 6 hours</option>
+										<option value="12" <?php selected( WPJS_Settings::get( 'sync_interval_hours', '0' ), '12' ); ?>>Every 12 hours</option>
+										<option value="24" <?php selected( WPJS_Settings::get( 'sync_interval_hours', '0' ), '24' ); ?>>Every 24 hours</option>
+									</select>
+									<select name="sync_cron_mode" style="width:auto;">
+										<option value="approved" <?php selected( WPJS_Settings::get( 'sync_cron_mode', 'approved' ), 'approved' ); ?>>Approved &amp; outdated only</option>
+										<option value="all" <?php selected( WPJS_Settings::get( 'sync_cron_mode', 'approved' ), 'all' ); ?>>All published posts</option>
+									</select>
+									<?php if ( WPJS_Cron::is_scheduled() ) : ?>
+										<p class="description" style="color:#00a32a;">Next sync: <?php echo esc_html( WPJS_Cron::next_run() ); ?> UTC</p>
+									<?php else : ?>
+										<p class="description">Select an interval and save to enable.</p>
+									<?php endif; ?>
+								</td>
+							</tr>
 						</table>
-						<?php submit_button( 'Save Settings' ); ?>
 					</div>
+
+					<div class="card" style="max-width:720px;padding:20px;margin-top:16px;">
+						<h2 style="margin-top:0;">
+							<span class="dashicons dashicons-superhero-alt" style="font-size:20px;width:20px;height:20px;color:#2271b1;margin-right:8px;vertical-align:middle;"></span>
+							AI Features
+						</h2>
+						<table class="form-table" role="presentation">
+							<tr>
+								<th>AI Description</th>
+								<td>
+									<label>
+										<input type="checkbox" name="ai_generate_descriptions" value="1" <?php checked( WPJS_Settings::get( 'ai_generate_descriptions', '0' ), '1' ); ?> />
+										Auto-generate SEO description when missing (no excerpt, no Yoast/RankMath)
+									</label>
+								</td>
+							</tr>
+							<tr>
+								<th>AI Alt Text</th>
+								<td>
+									<label>
+										<input type="checkbox" name="ai_generate_alt_text" value="1" <?php checked( WPJS_Settings::get( 'ai_generate_alt_text', '0' ), '1' ); ?> />
+										Auto-generate image alt text when missing (uses AI vision)
+									</label>
+								</td>
+							</tr>
+						</table>
+						<?php
+						$uses_co = WPJS_AI_Client::uses_content_orchestrator();
+						if ( $uses_co ) :
+						?>
+							<div class="notice notice-success inline" style="margin:8px 0;padding:8px 12px;">
+								<strong>AI Provider:</strong> Using <?php echo esc_html( ucfirst( WPJS_AI_Client::get_provider() ) ); ?> API key from RayAI – Content Orchestrator
+							</div>
+						<?php else : ?>
+							<table class="form-table" role="presentation">
+								<tr>
+									<th>AI Provider</th>
+									<td>
+										<select name="ai_provider" style="width:auto;">
+											<option value="claude" <?php selected( WPJS_Settings::get( 'ai_provider', 'claude' ), 'claude' ); ?>>Claude (Anthropic)</option>
+											<option value="openai" <?php selected( WPJS_Settings::get( 'ai_provider', 'claude' ), 'openai' ); ?>>OpenAI</option>
+										</select>
+									</td>
+								</tr>
+								<tr>
+									<th>API Key</th>
+									<td>
+										<input type="password" name="ai_api_key" value="<?php echo esc_attr( WPJS_Settings::get( 'ai_api_key', '' ) ); ?>" class="regular-text" autocomplete="off" />
+										<button type="button" id="wpjs-validate-ai" class="button" style="margin-left:8px;">Validate</button>
+										<span id="wpjs-ai-status" style="margin-left:8px;"></span>
+									</td>
+								</tr>
+							</table>
+							<p class="description">Or install <a href="https://raybogman.com/products/ai-content-orchestrator/" target="_blank" rel="noopener">RayAI – Content Orchestrator</a> to share API keys automatically.</p>
+						<?php endif; ?>
+					</div>
+
+					<?php submit_button( 'Save Settings' ); ?>
 				</form>
 
 			<?php elseif ( $active_tab === 'content' ) : ?>
@@ -485,6 +602,16 @@ class WPJS_Admin {
 					</div>
 				</div>
 
+			<?php elseif ( $active_tab === 'log' ) : ?>
+
+				<?php /* ═══ LOG TAB ═══ */ ?>
+				<?php $this->render_log_tab(); ?>
+
+			<?php elseif ( $active_tab === 'pull' ) : ?>
+
+				<?php /* ═══ PULL TAB ═══ */ ?>
+				<?php $this->render_pull_tab(); ?>
+
 			<?php elseif ( $active_tab === 'faq' ) : ?>
 
 				<?php /* ═══ FAQ TAB ═══ */ ?>
@@ -538,7 +665,7 @@ class WPJS_Admin {
 
 			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-what-does-it-do">
 				<h3 style="margin-top:0;">What does this plugin do?</h3>
-				<p>RayAI – Jekyll Sync lets you publish WordPress posts and pages to a Jekyll site hosted on GitHub Pages. It converts your HTML content to Markdown with YAML front matter, uploads featured images, rewrites internal links, and commits everything directly to your GitHub repository — all from within the WordPress admin.</p>
+				<p>RayBogman – Jekyll Sync lets you publish WordPress posts and pages to a Jekyll site hosted on GitHub Pages. It converts your HTML content to Markdown with YAML front matter, uploads featured images, rewrites internal links, and commits everything directly to your GitHub repository — all from within the WordPress admin.</p>
 			</div>
 
 			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-github-oauth">
@@ -638,10 +765,10 @@ class WPJS_Admin {
 			<div class="card" style="padding:16px 20px;">
 				<h2 style="margin-top:0;">
 					<span class="dashicons dashicons-share-alt" style="font-size:24px;width:24px;height:24px;color:#2271b1;margin-right:8px;vertical-align:middle;"></span>
-					About RayAI – Jekyll Sync
+					About RayBogman – Jekyll Sync
 				</h2>
 				<p style="font-size:14px;line-height:1.6;">
-					<strong>RayAI – Jekyll Sync</strong> bridges the gap between WordPress content management and Jekyll static site generation. Write and manage your content in WordPress, then publish directly to your Jekyll GitHub Pages site with a single click.
+					<strong>RayBogman – Jekyll Sync</strong> bridges the gap between WordPress content management and Jekyll static site generation. Write and manage your content in WordPress, then publish directly to your Jekyll GitHub Pages site with a single click.
 				</p>
 				<p style="font-size:14px;line-height:1.6;">
 					The plugin handles the entire conversion pipeline: HTML to Markdown, YAML front matter generation, featured image uploads, internal link rewriting, and Git commits — all through the GitHub API, no CLI or server-side Git required.
@@ -724,7 +851,7 @@ class WPJS_Admin {
 
 			<div class="card" style="padding:16px 20px;text-align:center;">
 				<p style="color:#50575e;font-size:13px;margin:0;">
-					RayAI – Jekyll Sync v<?php echo esc_html( WPJS_VERSION ); ?> · &copy; <?php echo esc_html( gmdate( 'Y' ) ); ?>
+					RayBogman – Jekyll Sync v<?php echo esc_html( WPJS_VERSION ); ?> · &copy; <?php echo esc_html( gmdate( 'Y' ) ); ?>
 					<a href="https://raybogman.com" target="_blank" rel="noopener" style="color:#50575e;">Ray Bogman</a>
 				</p>
 			</div>
@@ -741,7 +868,7 @@ class WPJS_Admin {
 			<div class="card" style="padding:20px;">
 				<h2 style="margin-top:0;">
 					<span class="dashicons dashicons-store" style="font-size:24px;width:24px;height:24px;color:#2271b1;margin-right:8px;vertical-align:middle;"></span>
-					More Solutions by RayAI
+					More Solutions by RayBogman
 				</h2>
 				<p style="font-size:14px;line-height:1.6;">
 					Explore the full suite of WordPress plugins by Ray Bogman, designed to supercharge your content workflow with AI-powered automation.
@@ -827,7 +954,7 @@ class WPJS_Admin {
 					<div style="flex:1;min-width:400px;">
 						<h2 style="margin-top:0;">
 							<span class="dashicons dashicons-share-alt" style="font-size:24px;width:24px;height:24px;color:#00a32a;margin-right:8px;vertical-align:middle;"></span>
-							RayAI – Jekyll Sync
+							RayBogman – Jekyll Sync
 							<span style="background:#00a32a;color:#fff;font-size:11px;padding:2px 8px;border-radius:3px;vertical-align:middle;margin-left:8px;">ACTIVE</span>
 						</h2>
 						<p style="font-size:14px;line-height:1.6;">
@@ -850,10 +977,10 @@ class WPJS_Admin {
 			<div class="card" style="padding:20px;margin-top:16px;">
 				<h2 style="margin-top:0;">
 					<span class="dashicons dashicons-megaphone" style="font-size:24px;width:24px;height:24px;color:#dba617;margin-right:8px;vertical-align:middle;"></span>
-					RayAI Ecosystem
+					RayBogman Ecosystem
 				</h2>
 				<p style="font-size:14px;line-height:1.6;">
-					The RayAI plugin suite is designed to work together. Use <strong>Content Orchestrator</strong> to generate AI-powered blog posts, then use <strong>Jekyll Sync</strong> to publish them to your static Jekyll site — a complete content-to-deployment pipeline.
+					The RayBogman plugin suite is designed to work together. Use <strong>Content Orchestrator</strong> to generate AI-powered blog posts, then use <strong>Jekyll Sync</strong> to publish them to your static Jekyll site — a complete content-to-deployment pipeline.
 				</p>
 				<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
 					<div style="flex:1;min-width:250px;background:#f0f6fc;border:1px solid #c3c4c7;border-radius:4px;padding:16px;text-align:center;">
@@ -883,7 +1010,7 @@ class WPJS_Admin {
 			<div class="card" style="padding:16px 20px;text-align:center;">
 				<p style="color:#50575e;font-size:13px;margin:0;">
 					<a href="https://raybogman.com" target="_blank" rel="noopener" style="color:#50575e;">raybogman.com</a> ·
-					All RayAI plugins are built by <a href="https://linkedin.com/in/raybogman" target="_blank" rel="noopener" style="color:#50575e;">Ray Bogman</a>
+					All RayBogman plugins are built by <a href="https://linkedin.com/in/raybogman" target="_blank" rel="noopener" style="color:#50575e;">Ray Bogman</a>
 				</p>
 			</div>
 		</div>
@@ -945,7 +1072,7 @@ class WPJS_Admin {
 		<div class="wrap">
 			<h1 class="wp-heading-inline">
 				<span class="dashicons dashicons-share-alt" style="font-size:28px;width:28px;height:28px;vertical-align:middle;margin-right:8px;"></span>
-				RayAI – Jekyll Sync — Articles
+				RayBogman – Jekyll Sync — Articles
 			</h1>
 			<hr class="wp-header-end" />
 
@@ -990,6 +1117,7 @@ class WPJS_Admin {
 	public function save_settings() {
 		$this->check_cap_and_nonce( 'wpjs_save_settings' ); // Nonce verified here.
 		WPJS_Settings::update( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified above.
+		WPJS_Cron::schedule();
 		$this->notice( 'success', 'Settings saved.' );
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified above.
 		$referer  = sanitize_text_field( wp_unslash( $_POST['_wp_http_referer'] ?? '' ) );
@@ -1068,13 +1196,8 @@ class WPJS_Admin {
 					if ( is_wp_error( $r ) ) { $fail++; } else { $ok++; }
 					break;
 				case 'bulk_delete':
-					$filename = WPJS_Converter::filename( $post );
-					$base     = $post->post_type === 'page'
-						? WPJS_Settings::get( 'pages_path', '_pages' )
-						: WPJS_Settings::get( 'posts_path', '_posts' );
-					$client = new WPJS_GitHub_Client();
-					$r = $client->delete_file( $base . '/' . $filename, sprintf( 'Delete "%s" from Jekyll', $post->post_title ) );
-					if ( is_wp_error( $r ) ) { $fail++; } else { delete_post_meta( $id, WPJS_Publisher::META_LAST_PUSH ); $ok++; }
+					$r = WPJS_Publisher::delete( $post );
+					if ( is_wp_error( $r ) ) { $fail++; } else { $ok++; }
 					break;
 			}
 		}
@@ -1164,20 +1287,12 @@ class WPJS_Admin {
 		$post = $id ? get_post( $id ) : null;
 		if ( ! $post ) { wp_die( 'Post not found.' ); }
 
-		$filename = WPJS_Converter::filename( $post );
-		$base     = $post->post_type === 'page'
-			? WPJS_Settings::get( 'pages_path', '_pages' )
-			: WPJS_Settings::get( 'posts_path', '_posts' );
-		$path     = $base . '/' . $filename;
-
-		$client = new WPJS_GitHub_Client();
-		$result = $client->delete_file( $path, sprintf( 'Delete "%s" from Jekyll', $post->post_title ) );
+		$result = WPJS_Publisher::delete( $post );
 
 		if ( is_wp_error( $result ) ) {
 			$this->notice( 'error', 'Delete failed: ' . $result->get_error_message() );
 		} else {
-			delete_post_meta( $post->ID, WPJS_Publisher::META_LAST_PUSH );
-			$this->notice( 'success', 'Deleted ' . esc_html( $path ) . ' from Jekyll.' );
+			$this->notice( 'success', 'Deleted from Jekyll.' );
 		}
 		wp_safe_redirect( admin_url( 'admin.php?page=wpjs-articles' ) );
 		exit;
@@ -1196,6 +1311,272 @@ class WPJS_Admin {
 	private function notice( $type, $message ) {
 		set_transient( 'wpjs_notice_' . get_current_user_id(), array( 'type' => $type, 'message' => $message ), 60 );
 	}
+
+	/* ─── Dashboard page ────────────────────────────── */
+
+	public function render_dashboard() {
+		$all_posts = new WP_Query( array(
+			'post_type'      => array( 'post', 'page' ),
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+		) );
+		$total     = $all_posts->found_posts;
+		$published = 0;
+		$outdated  = 0;
+		$approved  = 0;
+		foreach ( $all_posts->posts as $pid ) {
+			$lp = get_post_meta( $pid, '_wpjs_last_push', true );
+			if ( $lp ) {
+				$push_time = strtotime( $lp );
+				$mod_time  = strtotime( get_post( $pid )->post_modified_gmt );
+				if ( $mod_time > $push_time ) {
+					$outdated++;
+				} else {
+					$published++;
+				}
+			}
+			if ( get_post_meta( $pid, '_wpjs_approved', true ) ) {
+				$approved++;
+			}
+		}
+		$not_published = $total - $published - $outdated;
+
+		$log_entries = class_exists( 'WPJS_Sync_Log' ) ? WPJS_Sync_Log::get( 10 ) : array();
+		$action      = admin_url( 'admin-post.php' );
+		?>
+		<div class="wrap">
+			<h1>
+				<span class="dashicons dashicons-share-alt" style="font-size:28px;width:28px;height:28px;vertical-align:middle;margin-right:8px;"></span>
+				RayBogman – Jekyll Sync — Dashboard
+			</h1>
+
+			<div style="display:flex;gap:16px;flex-wrap:wrap;margin:16px 0;">
+				<div class="card" style="flex:1;min-width:150px;text-align:center;padding:20px;">
+					<div style="font-size:32px;font-weight:700;color:#2271b1;"><?php echo esc_html( $total ); ?></div>
+					<div>Total Posts/Pages</div>
+				</div>
+				<div class="card" style="flex:1;min-width:150px;text-align:center;padding:20px;">
+					<div style="font-size:32px;font-weight:700;color:#00a32a;"><?php echo esc_html( $published ); ?></div>
+					<div>Published</div>
+				</div>
+				<div class="card" style="flex:1;min-width:150px;text-align:center;padding:20px;">
+					<div style="font-size:32px;font-weight:700;color:#dba617;"><?php echo esc_html( $outdated ); ?></div>
+					<div>Outdated</div>
+				</div>
+				<div class="card" style="flex:1;min-width:150px;text-align:center;padding:20px;">
+					<div style="font-size:32px;font-weight:700;color:#d63638;"><?php echo esc_html( $not_published ); ?></div>
+					<div>Not Published</div>
+				</div>
+				<div class="card" style="flex:1;min-width:150px;text-align:center;padding:20px;">
+					<div style="font-size:32px;font-weight:700;color:#2271b1;"><?php echo esc_html( $approved ); ?></div>
+					<div>Approved</div>
+				</div>
+			</div>
+
+			<div class="card" style="padding:20px;margin-top:16px;">
+				<h2 style="margin-top:0;">Recent Activity</h2>
+				<table class="widefat striped">
+					<thead>
+						<tr><th>Date</th><th>User</th><th>Post</th><th>Action</th><th>Result</th></tr>
+					</thead>
+					<tbody>
+					<?php foreach ( $log_entries as $e ) :
+						$color = strpos( $e['result'], 'success' ) === 0 ? '#00a32a' : '#d63638';
+					?>
+						<tr>
+							<td><?php echo esc_html( $e['date'] ); ?></td>
+							<td><?php echo esc_html( $e['user'] ); ?></td>
+							<td><a href="<?php echo esc_url( get_edit_post_link( $e['post_id'] ) ); ?>"><?php echo esc_html( $e['title'] ); ?></a></td>
+							<td><?php echo esc_html( $e['action'] ); ?></td>
+							<td style="color:<?php echo esc_attr( $color ); ?>;font-weight:600;"><?php echo esc_html( $e['result'] ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+					<?php if ( empty( $log_entries ) ) : ?>
+						<tr><td colspan="5">No sync activity yet.</td></tr>
+					<?php endif; ?>
+					</tbody>
+				</table>
+			</div>
+
+			<div class="card" style="padding:20px;margin-top:16px;">
+				<h2 style="margin-top:0;">Quick Actions</h2>
+				<div style="display:flex;gap:8px;flex-wrap:wrap;">
+					<form method="post" action="<?php echo esc_url( $action ); ?>" style="margin:0;">
+						<input type="hidden" name="action" value="wpjs_publish_approved" />
+						<?php wp_nonce_field( 'wpjs_publish_approved' ); ?>
+						<button type="submit" class="button button-primary">Push All Approved</button>
+					</form>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=wpjs-articles' ) ); ?>" class="button">View Articles</a>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=wpjs-settings' ) ); ?>" class="button">Settings</a>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	/* ─── Log tab ────────────────────────────────────── */
+
+	private function render_log_tab() {
+		$entries = class_exists( 'WPJS_Sync_Log' ) ? WPJS_Sync_Log::get( 100 ) : array();
+		?>
+		<div>
+			<div class="card" style="padding:20px;">
+				<div style="display:flex;justify-content:space-between;align-items:center;">
+					<h2 style="margin-top:0;">Sync Log</h2>
+					<button type="button" id="wpjs-clear-log" class="button" onclick="return confirm('Clear the entire sync log?');">Clear Log</button>
+				</div>
+				<p class="description"><?php echo count( $entries ); ?> entries (max 500)</p>
+				<table class="widefat striped" style="margin-top:12px;">
+					<thead>
+						<tr><th>Date</th><th>User</th><th>Post</th><th>Action</th><th>Path</th><th>Result</th></tr>
+					</thead>
+					<tbody>
+					<?php foreach ( $entries as $e ) :
+						$color = strpos( $e['result'], 'success' ) === 0 ? '#00a32a' : '#d63638';
+					?>
+						<tr>
+							<td><?php echo esc_html( $e['date'] ); ?></td>
+							<td><?php echo esc_html( $e['user'] ); ?></td>
+							<td><a href="<?php echo esc_url( get_edit_post_link( $e['post_id'] ) ); ?>"><?php echo esc_html( $e['title'] ); ?></a></td>
+							<td><?php echo esc_html( $e['action'] ); ?></td>
+							<td><code><?php echo esc_html( $e['path'] ); ?></code></td>
+							<td style="color:<?php echo esc_attr( $color ); ?>;font-weight:600;"><?php echo esc_html( $e['result'] ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+					<?php if ( empty( $entries ) ) : ?>
+						<tr><td colspan="6">No sync activity yet.</td></tr>
+					<?php endif; ?>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<?php
+	}
+
+	/* ─── AJAX: diff ─────────────────────────────────── */
+
+	public function ajax_diff() {
+		check_ajax_referer( 'wpjs_ajax' );
+		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Permission denied.' ); }
+		$id   = isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0;
+		$post = $id ? get_post( $id ) : null;
+		if ( ! $post ) { wp_send_json_error( 'Post not found.' ); }
+
+		// Generate current markdown.
+		$new_content = WPJS_Converter::post_to_markdown( $post );
+		$filename    = WPJS_Converter::filename( $post );
+		$base        = $post->post_type === 'page'
+			? WPJS_Settings::get( 'pages_path', '_pages' )
+			: WPJS_Settings::get( 'posts_path', '_posts' );
+		$path = $base . '/' . $filename;
+
+		// Fetch existing from GitHub.
+		$client      = new WPJS_GitHub_Client();
+		$old_content = $client->get_file_content( $path );
+
+		if ( is_wp_error( $old_content ) ) {
+			// File doesn't exist yet.
+			wp_send_json_success( array(
+				'filename' => $filename,
+				'html'     => '<div class="notice notice-info inline" style="margin:0;padding:12px;"><p>New file — no previous version on Jekyll.</p></div><pre style="background:#d4edda;padding:12px;border-radius:4px;font-size:13px;white-space:pre-wrap;">' . esc_html( $new_content ) . '</pre>',
+			) );
+		}
+
+		$diff = WPJS_Diff::compute( $old_content, $new_content );
+		$html = WPJS_Diff::render_html( $diff );
+		wp_send_json_success( array( 'filename' => $filename, 'html' => $html ) );
+	}
+
+	/* ─── AJAX: clear log ────────────────────────────── */
+
+	public function ajax_validate_ai() {
+		check_ajax_referer( 'wpjs_ajax' );
+		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Permission denied.' ); }
+		$result = WPJS_AI_Client::validate_key();
+		if ( is_wp_error( $result ) ) { wp_send_json_error( $result->get_error_message() ); }
+		wp_send_json_success( array( 'provider' => WPJS_AI_Client::get_provider(), 'model' => WPJS_AI_Client::get_model() ) );
+	}
+
+	public function ajax_clear_log() {
+		check_ajax_referer( 'wpjs_ajax' );
+		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Permission denied.' ); }
+		WPJS_Sync_Log::clear();
+		wp_send_json_success();
+	}
+
+	/* ─── AJAX: pull ─────────────────────────────────── */
+
+	public function ajax_list_jekyll_posts() {
+		check_ajax_referer( 'wpjs_ajax' );
+		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Permission denied.' ); }
+		$posts = WPJS_Puller::list_jekyll_posts();
+		if ( is_wp_error( $posts ) ) { wp_send_json_error( $posts->get_error_message() ); }
+		wp_send_json_success( $posts );
+	}
+
+	public function ajax_pull_post() {
+		check_ajax_referer( 'wpjs_ajax' );
+		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Permission denied.' ); }
+		$path = sanitize_text_field( wp_unslash( $_POST['path'] ?? '' ) );
+		if ( ! $path ) { wp_send_json_error( 'No path provided.' ); }
+		$result = WPJS_Puller::pull_post( $path );
+		if ( is_wp_error( $result ) ) { wp_send_json_error( $result->get_error_message() ); }
+		wp_send_json_success( array( 'post_id' => $result, 'edit_url' => get_edit_post_link( $result, 'raw' ) ) );
+	}
+
+	/* ─── Pull tab ───────────────────────────────────── */
+
+	private function render_pull_tab() {
+		?>
+		<div>
+			<div class="card" style="padding:20px;">
+				<h2 style="margin-top:0;">
+					<span class="dashicons dashicons-download" style="font-size:24px;width:24px;height:24px;color:#2271b1;margin-right:8px;vertical-align:middle;"></span>
+					Pull from Jekyll
+				</h2>
+				<p style="font-size:14px;line-height:1.6;">
+					Import posts from your Jekyll repository back into WordPress. Select posts to pull — they will be created as drafts (new) or updated (existing).
+				</p>
+				<p>
+					<button type="button" id="wpjs-load-jekyll-posts" class="button button-primary">Load Jekyll Posts</button>
+					<span class="spinner" id="wpjs-pull-spinner" style="float:none;margin-top:4px;"></span>
+					<span id="wpjs-pull-status" style="margin-left:8px;"></span>
+				</p>
+			</div>
+
+			<div id="wpjs-pull-summary" style="display:none;margin-top:16px;">
+				<div class="notice notice-success" style="padding:12px;">
+					<strong id="wpjs-pull-summary-text"></strong>
+					<a href="<?php echo esc_url( admin_url( 'edit.php?post_status=draft' ) ); ?>" class="button button-secondary" style="margin-left:12px;">View Draft Posts</a>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=wpjs-articles' ) ); ?>" class="button button-secondary" style="margin-left:4px;">View Articles</a>
+				</div>
+			</div>
+
+			<div id="wpjs-pull-list" style="display:none;margin-top:16px;">
+				<div class="card" style="padding:20px;">
+					<div style="display:flex;justify-content:space-between;align-items:center;">
+						<h3 style="margin-top:0;">Jekyll Posts</h3>
+						<button type="button" id="wpjs-pull-all" class="button button-primary">Import All New</button>
+					</div>
+					<table class="widefat striped" id="wpjs-pull-table">
+						<thead>
+							<tr>
+								<th>File</th>
+								<th>Slug</th>
+								<th>In WordPress</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	/* ─── Helpers ────────────────────────────────────── */
 
 	private function check_cap_and_nonce( $action ) {
 		if ( ! current_user_can( 'manage_options' ) ) { wp_die( 'Permission denied.' ); }
