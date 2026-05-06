@@ -4,7 +4,7 @@ Tags: jekyll, github, github-pages, static-site, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 5.1.0
+Stable tag: 5.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,12 @@ No — image URLs remain pointing at your WordPress media library.
 No. You control what gets published via the Approved toggle + explicit push.
 
 == Changelog ==
+
+= 5.2.0 =
+* AI features now fully independent — no dependency on RayAI Content Orchestrator.
+* Own API key, provider (Claude/OpenAI), and model fields on Connection tab.
+* Validate button for API key testing.
+* AI Model field added (customizable, defaults to claude-sonnet-4-6 / gpt-4o).
 
 = 5.1.0 =
 * Renamed plugin from "RayAI – Jekyll Sync" to "RayBogman – Jekyll Sync" with slug `raybogman-jekyll-sync`.

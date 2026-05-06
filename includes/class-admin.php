@@ -411,35 +411,32 @@ class WPJS_Admin {
 								</td>
 							</tr>
 						</table>
-						<?php
-						$uses_co = WPJS_AI_Client::uses_content_orchestrator();
-						if ( $uses_co ) :
-						?>
-							<div class="notice notice-success inline" style="margin:8px 0;padding:8px 12px;">
-								<strong>AI Provider:</strong> Using <?php echo esc_html( ucfirst( WPJS_AI_Client::get_provider() ) ); ?> API key from RayAI – Content Orchestrator
-							</div>
-						<?php else : ?>
-							<table class="form-table" role="presentation">
-								<tr>
-									<th>AI Provider</th>
-									<td>
-										<select name="ai_provider" style="width:auto;">
-											<option value="claude" <?php selected( WPJS_Settings::get( 'ai_provider', 'claude' ), 'claude' ); ?>>Claude (Anthropic)</option>
-											<option value="openai" <?php selected( WPJS_Settings::get( 'ai_provider', 'claude' ), 'openai' ); ?>>OpenAI</option>
-										</select>
-									</td>
-								</tr>
-								<tr>
-									<th>API Key</th>
-									<td>
-										<input type="password" name="ai_api_key" value="<?php echo esc_attr( WPJS_Settings::get( 'ai_api_key', '' ) ); ?>" class="regular-text" autocomplete="off" />
-										<button type="button" id="wpjs-validate-ai" class="button" style="margin-left:8px;">Validate</button>
-										<span id="wpjs-ai-status" style="margin-left:8px;"></span>
-									</td>
-								</tr>
-							</table>
-							<p class="description">Or install <a href="https://raybogman.com/products/ai-content-orchestrator/" target="_blank" rel="noopener">RayAI – Content Orchestrator</a> to share API keys automatically.</p>
-						<?php endif; ?>
+						<table class="form-table" role="presentation">
+							<tr>
+								<th>AI Provider</th>
+								<td>
+									<select name="ai_provider" style="width:auto;">
+										<option value="claude" <?php selected( WPJS_Settings::get( 'ai_provider', 'claude' ), 'claude' ); ?>>Claude (Anthropic)</option>
+										<option value="openai" <?php selected( WPJS_Settings::get( 'ai_provider', 'claude' ), 'openai' ); ?>>OpenAI</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<th>API Key</th>
+								<td>
+									<input type="password" name="ai_api_key" value="<?php echo esc_attr( WPJS_Settings::get( 'ai_api_key', '' ) ); ?>" class="regular-text" autocomplete="off" />
+									<button type="button" id="wpjs-validate-ai" class="button" style="margin-left:8px;">Validate</button>
+									<span id="wpjs-ai-status" style="margin-left:8px;"></span>
+								</td>
+							</tr>
+							<tr>
+								<th>AI Model</th>
+								<td>
+									<input type="text" name="ai_model" value="<?php echo esc_attr( WPJS_AI_Client::get_model() ); ?>" class="regular-text" placeholder="claude-sonnet-4-6" />
+									<p class="description">Default: <code>claude-sonnet-4-6</code> for Claude, <code>gpt-4o</code> for OpenAI.</p>
+								</td>
+							</tr>
+						</table>
 					</div>
 
 					<?php submit_button( 'Save Settings' ); ?>

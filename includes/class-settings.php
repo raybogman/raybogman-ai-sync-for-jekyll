@@ -75,6 +75,9 @@ class WPJS_Settings {
 		if ( array_key_exists( 'ai_provider', $input ) ) {
 			$existing['ai_provider'] = sanitize_text_field( $input['ai_provider'] );
 		}
+		if ( array_key_exists( 'ai_model', $input ) ) {
+			$existing['ai_model'] = sanitize_text_field( $input['ai_model'] );
+		}
 
 		// Conversion mode (Content Style tab).
 		if ( array_key_exists( 'conversion_mode', $input ) ) {

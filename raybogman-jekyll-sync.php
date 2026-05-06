@@ -2,7 +2,7 @@
 /**
  * Plugin Name: RayBogman – Jekyll Sync
  * Description: Push WordPress posts and pages to a Jekyll GitHub Pages repository as Markdown with YAML front matter.
- * Version: 5.1.0
+ * Version: 5.2.0
  * Author: Ray Bogman
  * License: GPL-2.0-or-later
  * Text Domain: raybogman-jekyll-sync
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPJS_VERSION', '5.1.0' );
+define( 'WPJS_VERSION', '5.2.0' );
 define( 'WPJS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WPJS_URL', plugin_dir_url( __FILE__ ) );
 

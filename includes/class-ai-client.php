@@ -8,42 +8,19 @@ class WPJS_AI_Client {
 	}
 
 	public static function get_provider() {
-		// Check Content Orchestrator first.
-		$co_provider = get_option( 'rayai_ai_provider', '' );
-		if ( $co_provider && self::get_co_key( $co_provider ) ) {
-			return $co_provider;
-		}
-		// Own setting.
 		return WPJS_Settings::get( 'ai_provider', 'claude' );
 	}
 
 	public static function get_api_key() {
-		$provider = self::get_provider();
-		// Content Orchestrator keys.
-		$co_key = self::get_co_key( $provider );
-		if ( $co_key ) { return $co_key; }
-		// Own key.
 		return WPJS_Settings::get( 'ai_api_key', '' );
 	}
 
 	public static function get_model() {
 		$provider = self::get_provider();
 		if ( $provider === 'openai' ) {
-			return get_option( 'rayai_openai_model', '' ) ?: WPJS_Settings::get( 'ai_model', 'gpt-4o' );
+			return WPJS_Settings::get( 'ai_model', 'gpt-4o' );
 		}
-		return get_option( 'rayai_claude_model', '' ) ?: WPJS_Settings::get( 'ai_model', 'claude-sonnet-4-6' );
-	}
-
-	public static function uses_content_orchestrator() {
-		$provider = get_option( 'rayai_ai_provider', '' );
-		return $provider && self::get_co_key( $provider );
-	}
-
-	private static function get_co_key( $provider ) {
-		if ( $provider === 'openai' ) {
-			return get_option( 'rayai_openai_api_key', '' );
-		}
-		return get_option( 'rayai_anthropic_api_key', '' );
+		return WPJS_Settings::get( 'ai_model', 'claude-sonnet-4-6' );
 	}
 
 	public static function call( $prompt, $max_tokens = 500 ) {
