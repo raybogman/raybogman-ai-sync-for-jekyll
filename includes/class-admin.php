@@ -62,12 +62,11 @@ class WPJS_Admin {
 			) );
 			// Add inline styles for column widths and preview modal.
 			wp_add_inline_style( 'wp-admin', '
-				.wp-list-table .column-cb { width:30px; }
+				.wp-list-table .column-cb { width:2.5em; }
 				.wp-list-table .column-title { width:auto; }
-				.wp-list-table .column-status { width:90px; }
-				.wp-list-table .column-approved { width:60px;text-align:center; }
-				.wp-list-table .column-last_push { width:100px; }
-				.wp-list-table .column-actions { width:160px; }
+				.wp-list-table .column-status { width:100px; }
+				.wp-list-table .column-last_push { width:90px; }
+				.wp-list-table .column-actions { width:200px; }
 				#wpjs-preview-overlay { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:100000;display:none;justify-content:center;align-items:center; }
 				#wpjs-preview-modal { background:#fff;width:800px;max-width:90vw;max-height:85vh;border-radius:6px;overflow:hidden;display:flex;flex-direction:column; }
 				#wpjs-preview-modal .modal-header { padding:12px 16px;border-bottom:1px solid #dcdcde;display:flex;justify-content:space-between;align-items:center; }

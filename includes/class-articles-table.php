@@ -19,10 +19,9 @@ class WPJS_Articles_Table extends WP_List_Table {
 		return array(
 			'cb'        => '<input type="checkbox" />',
 			'title'     => 'Title',
-			'status'    => 'Jekyll',
-			'approved'  => 'Approved',
-			'last_push' => 'Pushed',
-			'actions'   => 'Actions',
+			'status'    => 'Status',
+			'last_push' => 'Synced',
+			'actions'   => '',
 		);
 	}
 
@@ -101,27 +100,32 @@ class WPJS_Articles_Table extends WP_List_Table {
 
 	public function column_status( $post ) {
 		$last_push = get_post_meta( $post->ID, WPJS_Publisher::META_LAST_PUSH, true );
-		if ( ! $last_push ) {
-			return '<span style="display:inline-flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#d63638;"></span> Not synced</span>';
-		}
-		$push_time = strtotime( $last_push );
-		$mod_time  = strtotime( $post->post_modified_gmt );
-		if ( $mod_time > $push_time ) {
-			return '<span style="display:inline-flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#dba617;"></span> Outdated</span>';
-		}
-		return '<span style="display:inline-flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#00a32a;"></span> Synced</span>';
-	}
-
-	public function column_approved( $post ) {
-		$approved = WPJS_Publisher::is_approved( $post->ID );
-		$url = wp_nonce_url(
+		$approved  = WPJS_Publisher::is_approved( $post->ID );
+		$approve_url = wp_nonce_url(
 			admin_url( 'admin-post.php?action=wpjs_toggle_approve&post_id=' . $post->ID ),
 			'wpjs_toggle_approve_' . $post->ID
 		);
-		if ( $approved ) {
-			return sprintf( '<a href="%s" title="Click to unapprove"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;font-size:20px;width:20px;height:20px;"></span></a>', esc_url( $url ) );
+
+		// Sync status.
+		if ( ! $last_push ) {
+			$dot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#d63638;"></span>';
+			$label = 'Not synced';
+		} elseif ( strtotime( $post->post_modified_gmt ) > strtotime( $last_push ) ) {
+			$dot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#dba617;"></span>';
+			$label = 'Outdated';
+		} else {
+			$dot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#00a32a;"></span>';
+			$label = 'Synced';
 		}
-		return sprintf( '<a href="%s" title="Click to approve"><span class="dashicons dashicons-marker" style="color:#c3c4c7;font-size:20px;width:20px;height:20px;"></span></a>', esc_url( $url ) );
+
+		// Approve toggle.
+		if ( $approved ) {
+			$approve = sprintf( '<a href="%s" title="Click to unapprove" style="text-decoration:none;color:#00a32a;">✓ Ready</a>', esc_url( $approve_url ) );
+		} else {
+			$approve = sprintf( '<a href="%s" title="Click to approve" style="text-decoration:none;color:#9ca1a7;">○ Queued</a>', esc_url( $approve_url ) );
+		}
+
+		return sprintf( '<span style="display:inline-flex;align-items:center;gap:4px;">%s %s</span><br>%s', $dot, $label, $approve );
 	}
 
 	public function column_last_push( $post ) {

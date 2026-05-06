@@ -4,7 +4,7 @@ Tags: jekyll, github, github-pages, static-site, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 5.6.0
+Stable tag: 5.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,13 @@ No — image URLs remain pointing at your WordPress media library.
 No. You control what gets published via the Approved toggle + explicit push.
 
 == Changelog ==
+
+= 5.7.0 =
+* Reduced to 4 columns: Title, Status, Synced, Actions — fits any screen.
+* Status column now combines sync status + approve toggle (✓ Ready / ○ Queued).
+* Removed separate Approved column.
+* Actions column widened to 200px for icon buttons.
+* AI feedback shown as inline row notice instead of off-screen tooltip.
 
 = 5.6.0 =
 * **Redesigned Articles table** — compact icon-based actions, fewer columns, better UX.

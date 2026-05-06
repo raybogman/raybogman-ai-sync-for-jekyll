@@ -104,12 +104,13 @@
 			setTimeout(function () {
 				btn.prop('disabled', false).text(orig).css('color', '');
 			}, 3000);
-			// Show summary in a tooltip-style popup.
-			var tip = $('<span style="position:absolute;background:#1d2327;color:#fff;padding:6px 10px;border-radius:4px;font-size:12px;z-index:9999;white-space:nowrap;"></span>');
-			tip.text(res.data.summary);
-			btn.parent().css('position', 'relative').append(tip);
-			tip.css({ bottom: '100%', left: 0, marginBottom: '4px' });
-			setTimeout(function () { tip.fadeOut(function () { tip.remove(); }); }, 4000);
+			// Show summary as inline notice below the row.
+			var row = btn.closest('tr');
+			var cols = row.find('td').length;
+			$('.wpjs-ai-notice').remove();
+			var notice = $('<tr class="wpjs-ai-notice"><td colspan="' + cols + '" style="background:#f0f6fc;padding:8px 12px;font-size:13px;border-left:3px solid #2271b1;">' + $('<span>').text(res.data.summary).html() + '</td></tr>');
+			row.after(notice);
+			setTimeout(function () { notice.fadeOut(function () { notice.remove(); }); }, 5000);
 		}).fail(function () {
 			btn.prop('disabled', false).text(orig);
 		});
