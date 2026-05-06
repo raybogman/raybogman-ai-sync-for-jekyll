@@ -97,19 +97,22 @@
 		});
 	});
 
-	/* ─── AI Validate ───────────────────────────────── */
+	/* ─── AI Validate (per provider) ────────────────── */
 
-	$(document).on('click', '#wpjs-validate-ai', function () {
-		var status = $('#wpjs-ai-status');
+	$(document).on('click', '.wpjs-validate-ai-btn', function () {
+		var btn      = $(this);
+		var provider = btn.data('provider');
+		var status   = $('.wpjs-ai-validate-status[data-provider="' + provider + '"]');
 		status.text('Validating...');
 		$.post(wpjs.ajax_url, {
 			action:   'wpjs_validate_ai',
-			_wpnonce: wpjs.nonce
+			_wpnonce: wpjs.nonce,
+			provider: provider
 		}, function (res) {
 			if (!res.success) {
 				status.html('<span style="color:#d63638;">Failed: ' + $('<span>').text(res.data).html() + '</span>');
 			} else {
-				status.html('<span style="color:#00a32a;">Connected to ' + $('<span>').text(res.data.provider).html() + ' (' + $('<span>').text(res.data.model).html() + ')</span>');
+				status.html('<span style="color:#00a32a;">Connected (' + $('<span>').text(res.data.model).html() + ')</span>');
 			}
 		}).fail(function () {
 			status.html('<span style="color:#d63638;">Request failed.</span>');

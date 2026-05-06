@@ -4,7 +4,7 @@ Tags: jekyll, github, github-pages, static-site, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 5.3.0
+Stable tag: 5.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,13 @@ No — image URLs remain pointing at your WordPress media library.
 No. You control what gets published via the Approved toggle + explicit push.
 
 == Changelog ==
+
+= 5.4.0 =
+* AI settings redesigned — separate sections for Claude (Anthropic) and OpenAI (GPT), matching Content Orchestrator layout.
+* Separate API key, model dropdown, and Validate button per provider.
+* Claude models: Sonnet 4.6 (recommended), Opus 4.6, Haiku 4.5.
+* OpenAI models: GPT-4o (recommended), GPT-4o Mini, GPT-4 Turbo, GPT-4.1, GPT-4.1 Mini, GPT-4.1 Nano.
+* Provider selector chooses which AI is used for description/alt text generation.
 
 = 5.3.0 =
 * Display name changed to "Ray Bogman Jekyll Sync" everywhere (no dashes, no RayBogman compound).

@@ -11,16 +11,20 @@ class WPJS_AI_Client {
 		return WPJS_Settings::get( 'ai_provider', 'claude' );
 	}
 
-	public static function get_api_key() {
-		return WPJS_Settings::get( 'ai_api_key', '' );
+	public static function get_api_key( $provider = '' ) {
+		if ( ! $provider ) { $provider = self::get_provider(); }
+		if ( $provider === 'openai' ) {
+			return WPJS_Settings::get( 'ai_openai_api_key', '' );
+		}
+		return WPJS_Settings::get( 'ai_claude_api_key', '' );
 	}
 
-	public static function get_model() {
-		$provider = self::get_provider();
+	public static function get_model( $provider = '' ) {
+		if ( ! $provider ) { $provider = self::get_provider(); }
 		if ( $provider === 'openai' ) {
-			return WPJS_Settings::get( 'ai_model', 'gpt-4o' );
+			return WPJS_Settings::get( 'ai_openai_model', 'gpt-4o' );
 		}
-		return WPJS_Settings::get( 'ai_model', 'claude-sonnet-4-6' );
+		return WPJS_Settings::get( 'ai_claude_model', 'claude-sonnet-4-6' );
 	}
 
 	public static function call( $prompt, $max_tokens = 500 ) {
@@ -46,10 +50,11 @@ class WPJS_AI_Client {
 		return self::describe_image_claude( $base64, $mime );
 	}
 
-	public static function validate_key() {
-		$provider = self::get_provider();
-		$key      = self::get_api_key();
-		if ( ! $key ) { return new WP_Error( 'no_key', 'No API key configured.' ); }
+	public static function validate_key( $provider = '' ) {
+		if ( ! $provider ) { $provider = self::get_provider(); }
+		$key   = self::get_api_key( $provider );
+		$model = self::get_model( $provider );
+		if ( ! $key ) { return new WP_Error( 'no_key', 'No API key configured for ' . $provider . '.' ); }
 
 		if ( $provider === 'openai' ) {
 			$response = wp_remote_post( 'https://api.openai.com/v1/chat/completions', array(
@@ -58,7 +63,7 @@ class WPJS_AI_Client {
 					'Content-Type'  => 'application/json',
 				),
 				'body'    => wp_json_encode( array(
-					'model'      => self::get_model(),
+					'model'      => $model,
 					'max_tokens' => 10,
 					'messages'   => array( array( 'role' => 'user', 'content' => 'Hi' ) ),
 				) ),
@@ -72,7 +77,7 @@ class WPJS_AI_Client {
 					'Content-Type'       => 'application/json',
 				),
 				'body'    => wp_json_encode( array(
-					'model'      => self::get_model(),
+					'model'      => $model,
 					'max_tokens' => 10,
 					'messages'   => array( array( 'role' => 'user', 'content' => 'Hi' ) ),
 				) ),

@@ -417,23 +417,58 @@ class WPJS_Admin {
 								<td>
 									<select name="ai_provider" style="width:auto;">
 										<option value="claude" <?php selected( WPJS_Settings::get( 'ai_provider', 'claude' ), 'claude' ); ?>>Claude (Anthropic)</option>
-										<option value="openai" <?php selected( WPJS_Settings::get( 'ai_provider', 'claude' ), 'openai' ); ?>>OpenAI</option>
+										<option value="openai" <?php selected( WPJS_Settings::get( 'ai_provider', 'claude' ), 'openai' ); ?>>OpenAI (GPT)</option>
+									</select>
+									<p class="description">Select which AI provider to use for description and alt text generation.</p>
+								</td>
+							</tr>
+						</table>
+
+						<h3 style="margin-top:20px;">Claude (Anthropic)</h3>
+						<table class="form-table" role="presentation">
+							<tr>
+								<th><label>API Key</label></th>
+								<td>
+									<input type="password" name="ai_claude_api_key" value="<?php echo esc_attr( WPJS_Settings::get( 'ai_claude_api_key', '' ) ); ?>" class="regular-text" placeholder="sk-ant-api03-..." autocomplete="off" />
+									<button type="button" class="button wpjs-validate-ai-btn" data-provider="claude" style="margin-left:8px;">Validate</button>
+									<span class="wpjs-ai-validate-status" data-provider="claude" style="margin-left:8px;"></span>
+									<p class="description">Sign up at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a> to get an API key.</p>
+								</td>
+							</tr>
+							<tr>
+								<th><label>Model</label></th>
+								<td>
+									<select name="ai_claude_model" style="width:auto;">
+										<option value="claude-sonnet-4-6" <?php selected( WPJS_Settings::get( 'ai_claude_model', 'claude-sonnet-4-6' ), 'claude-sonnet-4-6' ); ?>>Claude Sonnet 4.6 (recommended)</option>
+										<option value="claude-opus-4-6" <?php selected( WPJS_Settings::get( 'ai_claude_model', 'claude-sonnet-4-6' ), 'claude-opus-4-6' ); ?>>Claude Opus 4.6</option>
+										<option value="claude-haiku-4-5-20251001" <?php selected( WPJS_Settings::get( 'ai_claude_model', 'claude-sonnet-4-6' ), 'claude-haiku-4-5-20251001' ); ?>>Claude Haiku 4.5</option>
 									</select>
 								</td>
 							</tr>
+						</table>
+
+						<h3 style="margin-top:20px;">OpenAI (GPT)</h3>
+						<table class="form-table" role="presentation">
 							<tr>
-								<th>API Key</th>
+								<th><label>API Key</label></th>
 								<td>
-									<input type="password" name="ai_api_key" value="<?php echo esc_attr( WPJS_Settings::get( 'ai_api_key', '' ) ); ?>" class="regular-text" autocomplete="off" />
-									<button type="button" id="wpjs-validate-ai" class="button" style="margin-left:8px;">Validate</button>
-									<span id="wpjs-ai-status" style="margin-left:8px;"></span>
+									<input type="password" name="ai_openai_api_key" value="<?php echo esc_attr( WPJS_Settings::get( 'ai_openai_api_key', '' ) ); ?>" class="regular-text" placeholder="sk-..." autocomplete="off" />
+									<button type="button" class="button wpjs-validate-ai-btn" data-provider="openai" style="margin-left:8px;">Validate</button>
+									<span class="wpjs-ai-validate-status" data-provider="openai" style="margin-left:8px;"></span>
+									<p class="description">Get an API key at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a></p>
 								</td>
 							</tr>
 							<tr>
-								<th>AI Model</th>
+								<th><label>Model</label></th>
 								<td>
-									<input type="text" name="ai_model" value="<?php echo esc_attr( WPJS_AI_Client::get_model() ); ?>" class="regular-text" placeholder="claude-sonnet-4-6" />
-									<p class="description">Default: <code>claude-sonnet-4-6</code> for Claude, <code>gpt-4o</code> for OpenAI.</p>
+									<select name="ai_openai_model" style="width:auto;">
+										<option value="gpt-4o" <?php selected( WPJS_Settings::get( 'ai_openai_model', 'gpt-4o' ), 'gpt-4o' ); ?>>GPT-4o (recommended)</option>
+										<option value="gpt-4o-mini" <?php selected( WPJS_Settings::get( 'ai_openai_model', 'gpt-4o' ), 'gpt-4o-mini' ); ?>>GPT-4o Mini</option>
+										<option value="gpt-4-turbo" <?php selected( WPJS_Settings::get( 'ai_openai_model', 'gpt-4o' ), 'gpt-4-turbo' ); ?>>GPT-4 Turbo</option>
+										<option value="gpt-4.1" <?php selected( WPJS_Settings::get( 'ai_openai_model', 'gpt-4o' ), 'gpt-4.1' ); ?>>GPT-4.1</option>
+										<option value="gpt-4.1-mini" <?php selected( WPJS_Settings::get( 'ai_openai_model', 'gpt-4o' ), 'gpt-4.1-mini' ); ?>>GPT-4.1 Mini</option>
+										<option value="gpt-4.1-nano" <?php selected( WPJS_Settings::get( 'ai_openai_model', 'gpt-4o' ), 'gpt-4.1-nano' ); ?>>GPT-4.1 Nano</option>
+									</select>
 								</td>
 							</tr>
 						</table>
@@ -1490,9 +1525,10 @@ class WPJS_Admin {
 	public function ajax_validate_ai() {
 		check_ajax_referer( 'wpjs_ajax' );
 		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Permission denied.' ); }
-		$result = WPJS_AI_Client::validate_key();
+		$provider = sanitize_text_field( wp_unslash( $_POST['provider'] ?? '' ) );
+		$result   = WPJS_AI_Client::validate_key( $provider );
 		if ( is_wp_error( $result ) ) { wp_send_json_error( $result->get_error_message() ); }
-		wp_send_json_success( array( 'provider' => WPJS_AI_Client::get_provider(), 'model' => WPJS_AI_Client::get_model() ) );
+		wp_send_json_success( array( 'provider' => $provider ?: WPJS_AI_Client::get_provider(), 'model' => WPJS_AI_Client::get_model( $provider ) ) );
 	}
 
 	public function ajax_clear_log() {

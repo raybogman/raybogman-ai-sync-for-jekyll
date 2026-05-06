@@ -69,14 +69,20 @@ class WPJS_Settings {
 		if ( array_key_exists( 'ai_generate_alt_text', $input ) ) {
 			$existing['ai_generate_alt_text'] = ! empty( $input['ai_generate_alt_text'] ) ? '1' : '0';
 		}
-		if ( array_key_exists( 'ai_api_key', $input ) ) {
-			$existing['ai_api_key'] = sanitize_text_field( $input['ai_api_key'] );
-		}
 		if ( array_key_exists( 'ai_provider', $input ) ) {
 			$existing['ai_provider'] = sanitize_text_field( $input['ai_provider'] );
 		}
-		if ( array_key_exists( 'ai_model', $input ) ) {
-			$existing['ai_model'] = sanitize_text_field( $input['ai_model'] );
+		if ( array_key_exists( 'ai_claude_api_key', $input ) ) {
+			$existing['ai_claude_api_key'] = sanitize_text_field( $input['ai_claude_api_key'] );
+		}
+		if ( array_key_exists( 'ai_claude_model', $input ) ) {
+			$existing['ai_claude_model'] = sanitize_text_field( $input['ai_claude_model'] );
+		}
+		if ( array_key_exists( 'ai_openai_api_key', $input ) ) {
+			$existing['ai_openai_api_key'] = sanitize_text_field( $input['ai_openai_api_key'] );
+		}
+		if ( array_key_exists( 'ai_openai_model', $input ) ) {
+			$existing['ai_openai_model'] = sanitize_text_field( $input['ai_openai_model'] );
 		}
 
 		// Conversion mode (Content Style tab).
