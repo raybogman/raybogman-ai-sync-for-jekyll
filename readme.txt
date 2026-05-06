@@ -4,7 +4,7 @@ Tags: jekyll, github, github-pages, static-site, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 5.5.0
+Stable tag: 5.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,14 @@ No — image URLs remain pointing at your WordPress media library.
 No. You control what gets published via the Approved toggle + explicit push.
 
 == Changelog ==
+
+= 5.6.0 =
+* **Redesigned Articles table** — compact icon-based actions, fewer columns, better UX.
+* Merged Author, Type, Date into Title column subtitle (type · author · date).
+* Actions as icon buttons with tooltips: Push, Preview, AI, Diff, Delete.
+* Approved column as single icon toggle (checkmark / circle).
+* Last pushed shows relative time ("3 hours ago") with full date on hover.
+* Jekyll Status with colored dots (green=synced, yellow=outdated, red=not synced).
 
 = 5.5.0 =
 * **AI button per article** — generate AI description + image alt text before pushing, then preview the result.
