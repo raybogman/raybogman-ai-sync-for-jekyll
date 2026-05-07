@@ -19,6 +19,7 @@ class WPJS_Articles_Table extends WP_List_Table {
 		return array(
 			'cb'        => '<input type="checkbox" />',
 			'title'     => 'Title',
+			'actions'   => 'Actions',
 			'status'    => 'Status',
 			'last_push' => 'Synced',
 		);
@@ -90,42 +91,40 @@ class WPJS_Articles_Table extends WP_List_Table {
 		$author = esc_html( get_the_author_meta( 'display_name', $post->post_author ) );
 		$date   = esc_html( get_the_date( 'M j, Y', $post ) );
 		$type   = esc_html( $post->post_type );
-		$is_pushed = (bool) get_post_meta( $post->ID, WPJS_Publisher::META_LAST_PUSH, true );
 
-		// Build row actions.
-		$actions = array();
-		$actions['edit'] = sprintf( '<a href="%s">Edit</a>', esc_url( $edit ) );
+		return sprintf(
+			'<span style="display:inline-flex;align-items:center;">%s<strong><a href="%s">%s</a></strong></span><br><span class="description">%s &middot; %s &middot; %s</span>',
+			$img, esc_url( $edit ), $title, $type, $author, $date
+		);
+	}
+
+	public function column_actions( $post ) {
+		$is_pushed = (bool) get_post_meta( $post->ID, WPJS_Publisher::META_LAST_PUSH, true );
+		$links     = array();
 
 		if ( $post->post_status === 'publish' ) {
 			$push_url = wp_nonce_url(
 				admin_url( 'admin-post.php?action=wpjs_publish_one&post_id=' . $post->ID ),
 				'wpjs_publish_one_' . $post->ID
 			);
-			$actions['push'] = sprintf( '<a href="%s">%s</a>', esc_url( $push_url ), $is_pushed ? 'Re-push' : 'Push' );
-			$actions['preview'] = sprintf( '<a href="#" class="wpjs-preview-btn" data-post-id="%d">Preview</a>', $post->ID );
-
+			$links[] = sprintf( '<a href="%s">%s</a>', esc_url( $push_url ), $is_pushed ? 'Re-push' : 'Push' );
+			$links[] = sprintf( '<a href="#" class="wpjs-preview-btn" data-post-id="%d">Preview</a>', $post->ID );
 			if ( WPJS_AI_Client::is_available() ) {
-				$actions['ai'] = sprintf( '<a href="#" class="wpjs-ai-btn" data-post-id="%d">AI Generate</a>', $post->ID );
+				$links[] = sprintf( '<a href="#" class="wpjs-ai-btn" data-post-id="%d">AI</a>', $post->ID );
 			}
 			if ( $is_pushed ) {
-				$actions['diff'] = sprintf( '<a href="#" class="wpjs-diff-btn" data-post-id="%d">Diff</a>', $post->ID );
+				$links[] = sprintf( '<a href="#" class="wpjs-diff-btn" data-post-id="%d">Diff</a>', $post->ID );
+				$del_url = wp_nonce_url(
+					admin_url( 'admin-post.php?action=wpjs_delete_one&post_id=' . $post->ID ),
+					'wpjs_delete_one_' . $post->ID
+				);
+				$links[] = sprintf( '<a href="%s" style="color:#d63638;" onclick="return confirm(\'Delete from Jekyll?\');">Delete</a>', esc_url( $del_url ) );
 			}
+		} else {
+			$links[] = '<span class="description">Draft</span>';
 		}
 
-		if ( $is_pushed ) {
-			$del_url = wp_nonce_url(
-				admin_url( 'admin-post.php?action=wpjs_delete_one&post_id=' . $post->ID ),
-				'wpjs_delete_one_' . $post->ID
-			);
-			$actions['delete'] = sprintf( '<a href="%s" style="color:#d63638;" onclick="return confirm(\'Delete from Jekyll?\');">Delete</a>', esc_url( $del_url ) );
-		}
-
-		$row_actions = $this->row_actions( $actions );
-
-		return sprintf(
-			'<span style="display:inline-flex;align-items:center;">%s<strong><a class="row-title" href="%s">%s</a></strong></span><br><span class="description">%s &middot; %s &middot; %s</span>%s',
-			$img, esc_url( $edit ), $title, $type, $author, $date, $row_actions
-		);
+		return implode( ' | ', $links );
 	}
 
 	public function column_status( $post ) {

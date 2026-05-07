@@ -63,7 +63,8 @@ class WPJS_Admin {
 			// Add inline styles for column widths and preview modal.
 			wp_add_inline_style( 'wp-admin', '
 				.wp-list-table .column-cb { width:2.5em; }
-				.wp-list-table .column-title { width:auto; }
+				.wp-list-table .column-title { width:40%; }
+				.wp-list-table .column-actions { width:auto; }
 				.wp-list-table .column-status { width:100px; }
 				.wp-list-table .column-last_push { width:90px; }
 				#wpjs-preview-overlay { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:100000;display:none;justify-content:center;align-items:center; }
