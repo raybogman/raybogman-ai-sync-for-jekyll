@@ -47,8 +47,11 @@ class WPJS_Admin {
 	}
 
 	public function enqueue( $hook ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$page = sanitize_text_field( wp_unslash( $_GET['page'] ?? '' ) );
+
 		// Dashboard page JS.
-		if ( $hook === $this->dashboard_hook ) {
+		if ( $hook === $this->dashboard_hook || $page === 'wpjs-dashboard' ) {
 			wp_enqueue_script( 'wpjs-articles', WPJS_URL . 'assets/articles.js', array( 'jquery', 'wp-util' ), WPJS_VERSION, true );
 			wp_localize_script( 'wpjs-articles', 'wpjs', array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
@@ -58,7 +61,7 @@ class WPJS_Admin {
 		}
 
 		// Articles page JS.
-		if ( $hook === $this->articles_hook ) {
+		if ( $hook === $this->articles_hook || $page === 'wpjs-articles' ) {
 			wp_enqueue_script( 'wpjs-articles', WPJS_URL . 'assets/articles.js', array( 'jquery', 'wp-util' ), WPJS_VERSION, true );
 			wp_localize_script( 'wpjs-articles', 'wpjs', array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
@@ -81,7 +84,7 @@ class WPJS_Admin {
 		}
 
 		// Settings page JS.
-		if ( $hook !== $this->settings_hook ) { return; }
+		if ( $hook !== $this->settings_hook && $page !== 'wpjs-settings' ) { return; }
 		wp_enqueue_script( 'wpjs-settings', WPJS_URL . 'assets/settings.js', array( 'jquery' ), WPJS_VERSION, true );
 		wp_enqueue_script( 'wpjs-articles', WPJS_URL . 'assets/articles.js', array( 'jquery' ), WPJS_VERSION, true );
 		wp_localize_script( 'wpjs-settings', 'wpjs', array(

@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class WPJS_AI_Client {
 
 	public static function is_available() {
-		return (bool) self::get_api_key();
+		return (bool) ( WPJS_Settings::get( 'ai_claude_api_key', '' ) || WPJS_Settings::get( 'ai_openai_api_key', '' ) );
 	}
 
 	public static function get_provider() {

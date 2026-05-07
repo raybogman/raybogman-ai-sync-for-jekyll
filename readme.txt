@@ -4,7 +4,7 @@ Tags: jekyll, github, github-pages, static-site, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 6.0.0
+Stable tag: 6.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,10 @@ No — image URLs remain pointing at your WordPress media library.
 No. You control what gets published via the Approved toggle + explicit push.
 
 == Changelog ==
+
+= 6.0.1 =
+* Fixed JS not loading on Articles page — enqueue now uses both hook comparison AND page query param as fallback.
+* Fixed AI link not showing — `is_available()` now checks both Claude and OpenAI keys regardless of selected provider.
 
 = 6.0.0 =
 * **AI panel redesigned** — clicking AI opens a persistent inline panel below the row (never auto-hides).
