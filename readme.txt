@@ -4,7 +4,7 @@ Tags: jekyll, github, github-pages, static-site, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 5.9.0
+Stable tag: 6.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,14 @@ No — image URLs remain pointing at your WordPress media library.
 No. You control what gets published via the Approved toggle + explicit push.
 
 == Changelog ==
+
+= 6.0.0 =
+* **AI panel redesigned** — clicking AI opens a persistent inline panel below the row (never auto-hides).
+* Description field: editable text input with character counter (160 max), Regenerate (↻) and Save buttons.
+* Image alt text: each image shown with filename, featured badge, editable input, Regenerate and Save buttons.
+* Source labels: (AI generated), (from SEO plugin), (from excerpt), (existing).
+* Close button to dismiss the panel.
+* New AJAX endpoints: regen_description, save_description, regen_alt, save_alt.
 
 = 5.9.0 =
 * Actions column restored as always-visible text links between Title and Status.

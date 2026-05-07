@@ -238,56 +238,81 @@ class WPJS_Publisher {
 	}
 
 	public static function generate_ai_metadata( WP_Post $post ) {
-		$results = array( 'description' => '', 'alt_texts' => array() );
+		$results = array( 'description' => '', 'description_source' => '', 'images' => array() );
 
-		// Generate description (force, ignoring the toggle).
-		if ( WPJS_AI_Client::is_available() ) {
-			$excerpt  = get_the_excerpt( $post );
-			$seo_desc = get_post_meta( $post->ID, '_yoast_wpseo_metadesc', true )
-					 ?: get_post_meta( $post->ID, 'rank_math_description', true );
+		if ( ! WPJS_AI_Client::is_available() ) { return $results; }
 
-			if ( ! $excerpt && ! $seo_desc ) {
-				$text = wp_strip_all_tags( $post->post_content );
-				if ( strlen( $text ) >= 50 ) {
-					$desc = WPJS_AI_Client::call(
-						"Write an SEO meta description for this blog post. Requirements:\n- 1-2 sentences\n- Max 160 characters\n- Engaging and descriptive\n- Return only the description text, nothing else\n\nPost content:\n" . mb_substr( $text, 0, 2000 )
-					);
-					if ( $desc ) {
-						$desc = mb_substr( trim( $desc, '"\'.' ), 0, 160 );
-						wp_update_post( array( 'ID' => $post->ID, 'post_excerpt' => $desc ) );
-						$results['description'] = $desc;
-					}
-				}
+		// Description.
+		$excerpt  = get_the_excerpt( $post );
+		$seo_desc = get_post_meta( $post->ID, '_yoast_wpseo_metadesc', true )
+				 ?: get_post_meta( $post->ID, 'rank_math_description', true );
+
+		if ( $seo_desc ) {
+			$results['description'] = $seo_desc;
+			$results['description_source'] = 'seo';
+		} elseif ( $excerpt ) {
+			$results['description'] = $excerpt;
+			$results['description_source'] = 'excerpt';
+		} else {
+			$desc = self::ai_generate_description( $post );
+			if ( $desc ) {
+				$results['description'] = $desc;
+				$results['description_source'] = 'ai';
+			}
+		}
+
+		// Collect all image attachment IDs.
+		$image_ids = array();
+		$thumb_id  = get_post_thumbnail_id( $post->ID );
+		if ( $thumb_id ) { $image_ids[] = $thumb_id; }
+		$image_ids = array_merge( $image_ids, self::get_inline_image_ids( $post ) );
+		$image_ids = array_unique( $image_ids );
+
+		foreach ( $image_ids as $att_id ) {
+			$existing_alt = get_post_meta( $att_id, '_wp_attachment_image_alt', true );
+			$file_path    = get_attached_file( $att_id );
+			$filename     = $file_path ? basename( $file_path ) : 'image-' . $att_id;
+			$is_featured  = ( $att_id === $thumb_id );
+
+			if ( ! $existing_alt ) {
+				$alt = self::ai_generate_alt( $att_id );
+				$results['images'][] = array(
+					'id'       => $att_id,
+					'filename' => $filename,
+					'alt'      => $alt,
+					'source'   => $alt ? 'ai' : 'failed',
+					'featured' => $is_featured,
+				);
 			} else {
-				$results['description'] = $seo_desc ?: $excerpt;
-			}
-
-			// Generate alt text for featured image.
-			$thumb_id = get_post_thumbnail_id( $post->ID );
-			if ( $thumb_id ) {
-				$alt = self::generate_alt_for_attachment( $thumb_id );
-				if ( $alt ) {
-					$results['alt_texts'][] = $alt;
-				}
-			}
-
-			// Generate alt text for inline images.
-			$image_ids = self::get_inline_image_ids( $post );
-			foreach ( $image_ids as $att_id ) {
-				$alt = self::generate_alt_for_attachment( $att_id );
-				if ( $alt ) {
-					$results['alt_texts'][] = $alt;
-				}
+				$results['images'][] = array(
+					'id'       => $att_id,
+					'filename' => $filename,
+					'alt'      => $existing_alt,
+					'source'   => 'existing',
+					'featured' => $is_featured,
+				);
 			}
 		}
 
 		return $results;
 	}
 
-	private static function generate_alt_for_attachment( $attachment_id ) {
-		$existing = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
-		if ( $existing ) { return ''; }
+	public static function ai_generate_description( WP_Post $post ) {
+		$text = wp_strip_all_tags( $post->post_content );
+		if ( strlen( $text ) < 50 ) { return ''; }
 
+		$desc = WPJS_AI_Client::call(
+			"Write an SEO meta description for this blog post. Requirements:\n- 1-2 sentences\n- Max 160 characters\n- Engaging and descriptive\n- Return only the description text, nothing else\n\nPost content:\n" . mb_substr( $text, 0, 2000 )
+		);
+		if ( $desc ) {
+			$desc = mb_substr( trim( $desc, '"\'.' ), 0, 160 );
+			wp_update_post( array( 'ID' => $post->ID, 'post_excerpt' => $desc ) );
+			return $desc;
+		}
+		return '';
+	}
+
+	public static function ai_generate_alt( $attachment_id ) {
 		$file_path = get_attached_file( $attachment_id );
 		if ( ! $file_path || ! file_exists( $file_path ) ) { return ''; }
 		if ( filesize( $file_path ) > 5 * 1024 * 1024 ) { return ''; }
@@ -299,6 +324,12 @@ class WPJS_Publisher {
 			return $alt;
 		}
 		return '';
+	}
+
+	private static function generate_alt_for_attachment( $attachment_id ) {
+		$existing = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
+		if ( $existing ) { return ''; }
+		return self::ai_generate_alt( $attachment_id );
 	}
 
 	private static function get_inline_image_ids( WP_Post $post ) {

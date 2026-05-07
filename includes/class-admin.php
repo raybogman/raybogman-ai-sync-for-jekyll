@@ -25,6 +25,10 @@ class WPJS_Admin {
 		add_action( 'wp_ajax_wpjs_pull_post', array( $this, 'ajax_pull_post' ) );
 		add_action( 'wp_ajax_wpjs_validate_ai', array( $this, 'ajax_validate_ai' ) );
 		add_action( 'wp_ajax_wpjs_generate_ai', array( $this, 'ajax_generate_ai' ) );
+		add_action( 'wp_ajax_wpjs_regen_description', array( $this, 'ajax_regen_description' ) );
+		add_action( 'wp_ajax_wpjs_save_description', array( $this, 'ajax_save_description' ) );
+		add_action( 'wp_ajax_wpjs_regen_alt', array( $this, 'ajax_regen_alt' ) );
+		add_action( 'wp_ajax_wpjs_save_alt', array( $this, 'ajax_save_alt' ) );
 		add_action( 'admin_notices', array( $this, 'notices' ) );
 	}
 
@@ -1532,22 +1536,51 @@ class WPJS_Admin {
 		if ( ! $post ) { wp_send_json_error( 'Post not found.' ); }
 
 		$results = WPJS_Publisher::generate_ai_metadata( $post );
-		$summary = array();
-		if ( $results['description'] ) {
-			$summary[] = 'Description: ' . $results['description'];
-		}
-		if ( $results['alt_texts'] ) {
-			$summary[] = count( $results['alt_texts'] ) . ' image alt text(s) generated';
-		}
-		if ( empty( $summary ) ) {
-			$summary[] = 'Nothing to generate — description and alt text already exist';
-		}
+		wp_send_json_success( $results );
+	}
 
-		wp_send_json_success( array(
-			'summary' => implode( '. ', $summary ),
-			'description' => $results['description'],
-			'alt_count'   => count( $results['alt_texts'] ),
-		) );
+	public function ajax_regen_description() {
+		check_ajax_referer( 'wpjs_ajax' );
+		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Permission denied.' ); }
+		$id   = isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0;
+		$post = $id ? get_post( $id ) : null;
+		if ( ! $post ) { wp_send_json_error( 'Post not found.' ); }
+		// Clear existing excerpt to force regeneration.
+		wp_update_post( array( 'ID' => $post->ID, 'post_excerpt' => '' ) );
+		$desc = WPJS_Publisher::ai_generate_description( $post );
+		if ( ! $desc ) { wp_send_json_error( 'AI generation failed.' ); }
+		wp_send_json_success( array( 'description' => $desc ) );
+	}
+
+	public function ajax_save_description() {
+		check_ajax_referer( 'wpjs_ajax' );
+		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Permission denied.' ); }
+		$id   = isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0;
+		$desc = sanitize_text_field( wp_unslash( $_POST['description'] ?? '' ) );
+		if ( ! $id ) { wp_send_json_error( 'Invalid post.' ); }
+		wp_update_post( array( 'ID' => $id, 'post_excerpt' => $desc ) );
+		wp_send_json_success();
+	}
+
+	public function ajax_regen_alt() {
+		check_ajax_referer( 'wpjs_ajax' );
+		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Permission denied.' ); }
+		$att_id = isset( $_POST['attachment_id'] ) ? (int) $_POST['attachment_id'] : 0;
+		if ( ! $att_id ) { wp_send_json_error( 'Invalid attachment.' ); }
+		delete_post_meta( $att_id, '_wp_attachment_image_alt' );
+		$alt = WPJS_Publisher::ai_generate_alt( $att_id );
+		if ( ! $alt ) { wp_send_json_error( 'AI generation failed.' ); }
+		wp_send_json_success( array( 'alt' => $alt ) );
+	}
+
+	public function ajax_save_alt() {
+		check_ajax_referer( 'wpjs_ajax' );
+		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Permission denied.' ); }
+		$att_id = isset( $_POST['attachment_id'] ) ? (int) $_POST['attachment_id'] : 0;
+		$alt    = sanitize_text_field( wp_unslash( $_POST['alt'] ?? '' ) );
+		if ( ! $att_id ) { wp_send_json_error( 'Invalid attachment.' ); }
+		update_post_meta( $att_id, '_wp_attachment_image_alt', $alt );
+		wp_send_json_success();
 	}
 
 	public function ajax_validate_ai() {

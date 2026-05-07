@@ -90,34 +90,117 @@
 		e.preventDefault();
 		var btn    = $(this);
 		var postId = btn.data('post-id');
-		var orig   = btn.text();
-		btn.prop('disabled', true).text('Generating...');
+		var row    = btn.closest('tr');
+		var cols   = row.find('td').length;
+
+		// Remove any existing AI panel for this row.
+		row.next('.wpjs-ai-panel').remove();
+		btn.text('...').prop('disabled', true);
 
 		$.post(wpjs.ajax_url, {
 			action:   'wpjs_generate_ai',
 			_wpnonce: wpjs.nonce,
 			post_id:  postId
 		}, function (res) {
-			if (!res.success) {
-				btn.prop('disabled', false).text(orig);
-				alert('AI failed: ' + res.data);
-				return;
+			btn.text('AI').prop('disabled', false);
+			if (!res.success) { alert('AI failed: ' + res.data); return; }
+			var d = res.data;
+			var html = '<tr class="wpjs-ai-panel"><td colspan="' + cols + '" style="background:#f8f9fa;padding:12px 16px;border-left:3px solid #2271b1;">';
+
+			// Description section.
+			var src = d.description_source === 'ai' ? ' <em style="color:#2271b1;">(AI generated)</em>' : d.description_source === 'seo' ? ' <em>(from SEO plugin)</em>' : d.description_source === 'excerpt' ? ' <em>(from excerpt)</em>' : '';
+			html += '<div style="margin-bottom:12px;"><strong>Description</strong>' + src + '</div>';
+			html += '<div style="display:flex;gap:8px;align-items:flex-start;">';
+			html += '<input type="text" class="wpjs-ai-desc-input" data-post-id="' + postId + '" value="' + escAttr(d.description || '') + '" style="flex:1;padding:4px 8px;" maxlength="160" />';
+			html += '<button type="button" class="button wpjs-ai-regen-desc" data-post-id="' + postId + '" title="Regenerate">&#x21bb;</button>';
+			html += '<button type="button" class="button button-primary wpjs-ai-save-desc" data-post-id="' + postId + '">Save</button>';
+			html += '</div>';
+			html += '<p class="description" style="margin:4px 0 0;"><span class="wpjs-ai-desc-count">' + (d.description || '').length + '</span>/160 characters</p>';
+
+			// Images section.
+			if (d.images && d.images.length) {
+				html += '<div style="margin-top:16px;"><strong>Image Alt Text</strong> (' + d.images.length + ' images)</div>';
+				$.each(d.images, function (i, img) {
+					var badge = img.featured ? ' <span style="background:#2271b1;color:#fff;font-size:10px;padding:1px 5px;border-radius:2px;">featured</span>' : '';
+					var srcLabel = img.source === 'ai' ? ' <em style="color:#2271b1;">(AI)</em>' : img.source === 'existing' ? '' : ' <em style="color:#d63638;">(failed)</em>';
+					html += '<div style="margin-top:8px;"><span class="description">' + escHtml(img.filename) + '</span>' + badge + srcLabel + '</div>';
+					html += '<div style="display:flex;gap:8px;align-items:center;margin-top:4px;">';
+					html += '<input type="text" class="wpjs-ai-alt-input" data-att-id="' + img.id + '" value="' + escAttr(img.alt || '') + '" style="flex:1;padding:4px 8px;" maxlength="125" />';
+					html += '<button type="button" class="button wpjs-ai-regen-alt" data-att-id="' + img.id + '" title="Regenerate">&#x21bb;</button>';
+					html += '<button type="button" class="button wpjs-ai-save-alt" data-att-id="' + img.id + '">Save</button>';
+					html += '</div>';
+				});
 			}
-			btn.text('Done').css('color', '#00a32a');
-			setTimeout(function () {
-				btn.prop('disabled', false).text(orig).css('color', '');
-			}, 3000);
-			// Show summary as inline notice below the row.
-			var row = btn.closest('tr');
-			var cols = row.find('td').length;
-			$('.wpjs-ai-notice').remove();
-			var notice = $('<tr class="wpjs-ai-notice"><td colspan="' + cols + '" style="background:#f0f6fc;padding:8px 12px;font-size:13px;border-left:3px solid #2271b1;">' + $('<span>').text(res.data.summary).html() + '</td></tr>');
-			row.after(notice);
-			setTimeout(function () { notice.fadeOut(function () { notice.remove(); }); }, 5000);
+
+			html += '<div style="margin-top:12px;"><button type="button" class="button wpjs-ai-close">Close</button></div>';
+			html += '</td></tr>';
+			row.after(html);
 		}).fail(function () {
-			btn.prop('disabled', false).text(orig);
+			btn.text('AI').prop('disabled', false);
 		});
 	});
+
+	// Character count for description input.
+	$(document).on('input', '.wpjs-ai-desc-input', function () {
+		$(this).closest('td').find('.wpjs-ai-desc-count').text($(this).val().length);
+	});
+
+	// Close AI panel.
+	$(document).on('click', '.wpjs-ai-close', function () {
+		$(this).closest('.wpjs-ai-panel').remove();
+	});
+
+	// Regenerate description.
+	$(document).on('click', '.wpjs-ai-regen-desc', function () {
+		var btn = $(this);
+		var postId = btn.data('post-id');
+		var input = btn.parent().find('.wpjs-ai-desc-input');
+		btn.prop('disabled', true).html('&#x21bb;...');
+		$.post(wpjs.ajax_url, { action: 'wpjs_regen_description', _wpnonce: wpjs.nonce, post_id: postId }, function (res) {
+			btn.prop('disabled', false).html('&#x21bb;');
+			if (res.success) { input.val(res.data.description).trigger('input'); }
+			else { alert(res.data); }
+		}).fail(function () { btn.prop('disabled', false).html('&#x21bb;'); });
+	});
+
+	// Save description.
+	$(document).on('click', '.wpjs-ai-save-desc', function () {
+		var btn = $(this);
+		var postId = btn.data('post-id');
+		var desc = btn.parent().find('.wpjs-ai-desc-input').val();
+		btn.prop('disabled', true).text('...');
+		$.post(wpjs.ajax_url, { action: 'wpjs_save_description', _wpnonce: wpjs.nonce, post_id: postId, description: desc }, function (res) {
+			btn.prop('disabled', false).text(res.success ? 'Saved' : 'Error');
+			if (res.success) { setTimeout(function () { btn.text('Save'); }, 2000); }
+		}).fail(function () { btn.prop('disabled', false).text('Save'); });
+	});
+
+	// Regenerate alt text.
+	$(document).on('click', '.wpjs-ai-regen-alt', function () {
+		var btn = $(this);
+		var attId = btn.data('att-id');
+		var input = btn.parent().find('.wpjs-ai-alt-input');
+		btn.prop('disabled', true).html('&#x21bb;...');
+		$.post(wpjs.ajax_url, { action: 'wpjs_regen_alt', _wpnonce: wpjs.nonce, attachment_id: attId }, function (res) {
+			btn.prop('disabled', false).html('&#x21bb;');
+			if (res.success) { input.val(res.data.alt); }
+			else { alert(res.data); }
+		}).fail(function () { btn.prop('disabled', false).html('&#x21bb;'); });
+	});
+
+	// Save alt text.
+	$(document).on('click', '.wpjs-ai-save-alt', function () {
+		var btn = $(this);
+		var attId = btn.data('att-id');
+		var alt = btn.parent().find('.wpjs-ai-alt-input').val();
+		btn.prop('disabled', true).text('...');
+		$.post(wpjs.ajax_url, { action: 'wpjs_save_alt', _wpnonce: wpjs.nonce, attachment_id: attId, alt: alt }, function (res) {
+			btn.prop('disabled', false).text(res.success ? 'Saved' : 'Error');
+			if (res.success) { setTimeout(function () { btn.text('Save'); }, 2000); }
+		}).fail(function () { btn.prop('disabled', false).text('Save'); });
+	});
+
+	function escAttr(s) { return s ? s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
 
 	/* ─── Clear log ─────────────────────────────────── */
 
