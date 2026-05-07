@@ -237,23 +237,24 @@ class WPJS_Publisher {
 		}
 	}
 
-	public static function generate_ai_metadata( WP_Post $post ) {
-		$results = array( 'description' => '', 'description_source' => '', 'images' => array() );
+	public static function generate_ai_metadata( WP_Post $post, $force_generate = false ) {
+		$results = array( 'description' => '', 'description_source' => '', 'images' => array(), 'ai_available' => WPJS_AI_Client::is_available() );
 
-		if ( ! WPJS_AI_Client::is_available() ) { return $results; }
-
-		// Description.
+		// Description — always return current value, generate only if empty or forced.
 		$excerpt  = get_the_excerpt( $post );
 		$seo_desc = get_post_meta( $post->ID, '_yoast_wpseo_metadesc', true )
 				 ?: get_post_meta( $post->ID, 'rank_math_description', true );
 
 		if ( $seo_desc ) {
-			$results['description'] = $seo_desc;
+			$results['description'] = html_entity_decode( $seo_desc, ENT_QUOTES | ENT_HTML5 );
 			$results['description_source'] = 'seo';
 		} elseif ( $excerpt ) {
-			$results['description'] = $excerpt;
+			$results['description'] = html_entity_decode( $excerpt, ENT_QUOTES | ENT_HTML5 );
 			$results['description_source'] = 'excerpt';
-		} else {
+		}
+
+		// AI generate if empty or forced.
+		if ( ( ! $results['description'] || $force_generate ) && $results['ai_available'] ) {
 			$desc = self::ai_generate_description( $post );
 			if ( $desc ) {
 				$results['description'] = $desc;
@@ -274,13 +275,13 @@ class WPJS_Publisher {
 			$filename     = $file_path ? basename( $file_path ) : 'image-' . $att_id;
 			$is_featured  = ( $att_id === $thumb_id );
 
-			if ( ! $existing_alt ) {
+			if ( ! $existing_alt && $results['ai_available'] ) {
 				$alt = self::ai_generate_alt( $att_id );
 				$results['images'][] = array(
 					'id'       => $att_id,
 					'filename' => $filename,
 					'alt'      => $alt,
-					'source'   => $alt ? 'ai' : 'failed',
+					'source'   => $alt ? 'ai' : 'none',
 					'featured' => $is_featured,
 				);
 			} else {

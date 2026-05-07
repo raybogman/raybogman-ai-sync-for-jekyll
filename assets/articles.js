@@ -103,36 +103,43 @@
 			post_id:  postId
 		}, function (res) {
 			btn.text('AI').prop('disabled', false);
-			if (!res.success) { alert('AI failed: ' + res.data); return; }
+			if (!res.success) { alert('Failed: ' + res.data); return; }
 			var d = res.data;
+			var hasAI = d.ai_available;
 			var html = '<tr class="wpjs-ai-panel"><td colspan="' + cols + '" style="background:#f8f9fa;padding:12px 16px;border-left:3px solid #2271b1;">';
 
 			// Description section.
-			var src = d.description_source === 'ai' ? ' <em style="color:#2271b1;">(AI generated)</em>' : d.description_source === 'seo' ? ' <em>(from SEO plugin)</em>' : d.description_source === 'excerpt' ? ' <em>(from excerpt)</em>' : '';
-			html += '<div style="margin-bottom:12px;"><strong>Description</strong>' + src + '</div>';
+			var srcLabels = { ai: 'AI generated', seo: 'from SEO plugin', excerpt: 'from excerpt' };
+			var src = srcLabels[d.description_source] ? ' <em style="color:#666;">(' + srcLabels[d.description_source] + ')</em>' : '';
+			html += '<div style="margin-bottom:8px;"><strong>Description</strong>' + src + '</div>';
 			html += '<div style="display:flex;gap:8px;align-items:flex-start;">';
-			html += '<input type="text" class="wpjs-ai-desc-input" data-post-id="' + postId + '" value="' + escAttr(d.description || '') + '" style="flex:1;padding:4px 8px;" maxlength="160" />';
-			html += '<button type="button" class="button wpjs-ai-regen-desc" data-post-id="' + postId + '" title="Regenerate">&#x21bb;</button>';
+			html += '<textarea class="wpjs-ai-desc-input" data-post-id="' + postId + '" style="flex:1;padding:6px 8px;min-height:50px;resize:vertical;" maxlength="160">' + escHtml(d.description || '') + '</textarea>';
+			html += '<div style="display:flex;flex-direction:column;gap:4px;">';
+			if (hasAI) {
+				html += '<button type="button" class="button wpjs-ai-regen-desc" data-post-id="' + postId + '" title="Generate with AI">Generate</button>';
+			}
 			html += '<button type="button" class="button button-primary wpjs-ai-save-desc" data-post-id="' + postId + '">Save</button>';
-			html += '</div>';
+			html += '</div></div>';
 			html += '<p class="description" style="margin:4px 0 0;"><span class="wpjs-ai-desc-count">' + (d.description || '').length + '</span>/160 characters</p>';
 
 			// Images section.
 			if (d.images && d.images.length) {
-				html += '<div style="margin-top:16px;"><strong>Image Alt Text</strong> (' + d.images.length + ' images)</div>';
+				html += '<div style="margin-top:16px;border-top:1px solid #dcdcde;padding-top:12px;"><strong>Image Alt Text</strong> (' + d.images.length + ')</div>';
 				$.each(d.images, function (i, img) {
-					var badge = img.featured ? ' <span style="background:#2271b1;color:#fff;font-size:10px;padding:1px 5px;border-radius:2px;">featured</span>' : '';
-					var srcLabel = img.source === 'ai' ? ' <em style="color:#2271b1;">(AI)</em>' : img.source === 'existing' ? '' : ' <em style="color:#d63638;">(failed)</em>';
-					html += '<div style="margin-top:8px;"><span class="description">' + escHtml(img.filename) + '</span>' + badge + srcLabel + '</div>';
+					var badge = img.featured ? ' <span style="background:#2271b1;color:#fff;font-size:10px;padding:2px 6px;border-radius:2px;vertical-align:middle;">featured</span>' : '';
+					var srcLabel = img.source === 'ai' ? ' <em style="color:#2271b1;">(AI)</em>' : img.source === 'none' ? ' <em style="color:#999;">(empty)</em>' : '';
+					html += '<div style="margin-top:10px;"><span class="description">' + escHtml(img.filename) + '</span>' + badge + srcLabel + '</div>';
 					html += '<div style="display:flex;gap:8px;align-items:center;margin-top:4px;">';
-					html += '<input type="text" class="wpjs-ai-alt-input" data-att-id="' + img.id + '" value="' + escAttr(img.alt || '') + '" style="flex:1;padding:4px 8px;" maxlength="125" />';
-					html += '<button type="button" class="button wpjs-ai-regen-alt" data-att-id="' + img.id + '" title="Regenerate">&#x21bb;</button>';
+					html += '<input type="text" class="wpjs-ai-alt-input" data-att-id="' + img.id + '" value="' + escAttr(img.alt || '') + '" style="flex:1;padding:4px 8px;" maxlength="125" placeholder="Enter alt text..." />';
+					if (hasAI) {
+						html += '<button type="button" class="button wpjs-ai-regen-alt" data-att-id="' + img.id + '" title="Generate with AI">Generate</button>';
+					}
 					html += '<button type="button" class="button wpjs-ai-save-alt" data-att-id="' + img.id + '">Save</button>';
 					html += '</div>';
 				});
 			}
 
-			html += '<div style="margin-top:12px;"><button type="button" class="button wpjs-ai-close">Close</button></div>';
+			html += '<div style="margin-top:12px;border-top:1px solid #dcdcde;padding-top:12px;"><button type="button" class="button wpjs-ai-close">Close</button></div>';
 			html += '</td></tr>';
 			row.after(html);
 		}).fail(function () {
@@ -140,9 +147,12 @@
 		});
 	});
 
-	// Character count for description input.
+	// Character count for description textarea.
 	$(document).on('input', '.wpjs-ai-desc-input', function () {
-		$(this).closest('td').find('.wpjs-ai-desc-count').text($(this).val().length);
+		var len = $(this).val().length;
+		var counter = $(this).closest('td').find('.wpjs-ai-desc-count');
+		counter.text(len);
+		counter.css('color', len > 160 ? '#d63638' : '');
 	});
 
 	// Close AI panel.
@@ -154,13 +164,13 @@
 	$(document).on('click', '.wpjs-ai-regen-desc', function () {
 		var btn = $(this);
 		var postId = btn.data('post-id');
-		var input = btn.parent().find('.wpjs-ai-desc-input');
-		btn.prop('disabled', true).html('&#x21bb;...');
+		var input = btn.closest('td').find('.wpjs-ai-desc-input');
+		btn.prop('disabled', true).text('...');
 		$.post(wpjs.ajax_url, { action: 'wpjs_regen_description', _wpnonce: wpjs.nonce, post_id: postId }, function (res) {
-			btn.prop('disabled', false).html('&#x21bb;');
+			btn.prop('disabled', false).text('Generate');
 			if (res.success) { input.val(res.data.description).trigger('input'); }
 			else { alert(res.data); }
-		}).fail(function () { btn.prop('disabled', false).html('&#x21bb;'); });
+		}).fail(function () { btn.prop('disabled', false).text('Generate'); });
 	});
 
 	// Save description.
@@ -182,10 +192,10 @@
 		var input = btn.parent().find('.wpjs-ai-alt-input');
 		btn.prop('disabled', true).html('&#x21bb;...');
 		$.post(wpjs.ajax_url, { action: 'wpjs_regen_alt', _wpnonce: wpjs.nonce, attachment_id: attId }, function (res) {
-			btn.prop('disabled', false).html('&#x21bb;');
+			btn.prop('disabled', false).text('Generate');
 			if (res.success) { input.val(res.data.alt); }
 			else { alert(res.data); }
-		}).fail(function () { btn.prop('disabled', false).html('&#x21bb;'); });
+		}).fail(function () { btn.prop('disabled', false).text('Generate'); });
 	});
 
 	// Save alt text.

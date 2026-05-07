@@ -109,9 +109,7 @@ class WPJS_Articles_Table extends WP_List_Table {
 			);
 			$links[] = sprintf( '<a href="%s">%s</a>', esc_url( $push_url ), $is_pushed ? 'Re-push' : 'Push' );
 			$links[] = sprintf( '<a href="#" class="wpjs-preview-btn" data-post-id="%d">Preview</a>', $post->ID );
-			if ( WPJS_AI_Client::is_available() ) {
-				$links[] = sprintf( '<a href="#" class="wpjs-ai-btn" data-post-id="%d">AI</a>', $post->ID );
-			}
+			$links[] = sprintf( '<a href="#" class="wpjs-ai-btn" data-post-id="%d">AI</a>', $post->ID );
 			if ( $is_pushed ) {
 				$links[] = sprintf( '<a href="#" class="wpjs-diff-btn" data-post-id="%d">Diff</a>', $post->ID );
 				$del_url = wp_nonce_url(

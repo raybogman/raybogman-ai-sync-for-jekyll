@@ -4,7 +4,7 @@ Tags: jekyll, github, github-pages, static-site, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 6.0.1
+Stable tag: 6.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,14 @@ No — image URLs remain pointing at your WordPress media library.
 No. You control what gets published via the Approved toggle + explicit push.
 
 == Changelog ==
+
+= 6.1.0 =
+* AI panel now always shows existing description/alt text for editing — works with or without AI API key.
+* Description uses textarea instead of single-line input.
+* "Generate" button (AI) and "Save" button shown separately — generate first, edit, then save.
+* Character counter turns red when over 160.
+* Fixed HTML entity encoding in description display.
+* AI link always visible (not gated behind API key) — manual editing always available.
 
 = 6.0.1 =
 * Fixed JS not loading on Articles page — enqueue now uses both hook comparison AND page query param as fallback.
