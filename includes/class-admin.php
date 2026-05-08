@@ -501,7 +501,7 @@ class WPJS_Admin {
 							<tr>
 								<th><label>Jekyll Base URL</label></th>
 								<td>
-									<input type="url" name="jekyll_base_url" value="<?php echo esc_attr( $config_url ?: $jekyll_url ); ?>" class="regular-text" placeholder="https://raybogman.com" />
+									<input type="url" name="jekyll_base_url" value="<?php echo esc_attr( $config_url ?: $jekyll_url ); ?>" class="regular-text" placeholder="https://example.com" />
 									<?php
 									$active_url = WPJS_Converter::get_jekyll_base_url();
 									$wp_urls    = WPJS_Converter::get_wp_base_urls();

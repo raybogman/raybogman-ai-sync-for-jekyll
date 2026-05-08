@@ -61,7 +61,7 @@ Style-aware mode reads your existing Jekyll site to detect its conventions — f
 
 = How does URL rewriting work? =
 
-When you push a post, all internal links pointing to your WordPress domain are automatically replaced with your Jekyll site's URL. The Jekyll URL is read from your _config.yml (the url field) or can be set manually on the Content tab.
+When you push a post, all internal links pointing to your WordPress domain are automatically replaced with your Jekyll site's URL. The Jekyll URL is read from your _config.yml (the url field) or can be set manually on the Content tab. For example, `https://wp.example.com/my-post/` becomes `https://example.com/my-post/`.
 
 = How are featured images handled? =
 
@@ -432,7 +432,7 @@ WP.org compliance release. External services documented. Inline scripts replaced
 * `get_jekyll_base_url()` made public for display on settings page.
 
 = 1.9.0 =
-* Fixed URL detection — now correctly reads `url: "https://raybogman.com"` from _config.yml (was showing github.io).
+* Fixed URL detection — now correctly reads the `url` field from _config.yml.
 * Parser only reads top-level YAML keys (skips indented/nested lines to avoid false matches).
 * Empty `baseurl: ""` handled properly (no longer treated as a value).
 * Extracts posts permalink from `collections.posts.permalink` (e.g. `/blog/:slug/`).
