@@ -1207,12 +1207,18 @@ class WPJS_Admin {
 		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wpjs_bulk_nonce'] ) ), 'wpjs_bulk_action' ) ) { return; }
 		if ( ! current_user_can( 'manage_options' ) ) { return; }
 
+		// Allow long-running bulk operations.
+		if ( function_exists( 'set_time_limit' ) ) {
+			set_time_limit( 300 );
+		}
+
 		// WP_List_Table sends bulk action as 'action' (top dropdown) or 'action2' (bottom dropdown).
 		$bulk = sanitize_text_field( wp_unslash( $_POST['action'] ?? '-1' ) );
 		if ( $bulk === '-1' ) {
 			$bulk = sanitize_text_field( wp_unslash( $_POST['action2'] ?? '-1' ) );
 		}
-		$ids = array_map( 'intval', $_POST['post_ids'] ?? array() );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$ids = array_map( 'intval', wp_unslash( $_POST['post_ids'] ?? array() ) );
 
 		if ( empty( $ids ) || $bulk === '-1' ) {
 			$this->notice( 'warning', 'No items selected.' );
@@ -1258,9 +1264,14 @@ class WPJS_Admin {
 			'bulk_ai'        => 'AI metadata generated',
 		);
 		$label = $labels[ $bulk ] ?? 'Processed';
+		$details = array();
+		foreach ( $ids as $id ) {
+			$p = get_post( $id );
+			if ( $p ) { $details[] = $p->post_title; }
+		}
 		$this->notice(
 			$fail ? 'warning' : 'success',
-			sprintf( '%s — succeeded: %d, failed: %d.', $label, $ok, $fail )
+			sprintf( '%s — succeeded: %d, failed: %d. Posts: %s', $label, $ok, $fail, implode( ', ', $details ) )
 		);
 		wp_safe_redirect( admin_url( 'admin.php?page=wpjs-articles' ) );
 		exit;
