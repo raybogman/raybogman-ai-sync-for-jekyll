@@ -25,6 +25,7 @@ class WPJS_Admin {
 		add_action( 'wp_ajax_wpjs_pull_post', array( $this, 'ajax_pull_post' ) );
 		add_action( 'wp_ajax_wpjs_validate_ai', array( $this, 'ajax_validate_ai' ) );
 		add_action( 'wp_ajax_wpjs_generate_ai', array( $this, 'ajax_generate_ai' ) );
+		add_action( 'wp_ajax_wpjs_verify_sync', array( $this, 'ajax_verify_sync' ) );
 		add_action( 'wp_ajax_wpjs_regen_description', array( $this, 'ajax_regen_description' ) );
 		add_action( 'wp_ajax_wpjs_save_description', array( $this, 'ajax_save_description' ) );
 		add_action( 'wp_ajax_wpjs_regen_alt', array( $this, 'ajax_regen_alt' ) );
@@ -1114,12 +1115,13 @@ class WPJS_Admin {
 
 			<p>Use the checkboxes and <strong>Bulk Actions</strong> dropdown to approve, push, or delete multiple items. Or use the row buttons for individual actions.</p>
 
-			<div style="margin:12px 0;display:flex;gap:12px;align-items:center;">
+			<div style="margin:12px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
 				<form method="post" action="<?php echo esc_url( $action ); ?>" style="margin:0;">
 					<input type="hidden" name="action" value="wpjs_publish_approved" />
 					<?php wp_nonce_field( 'wpjs_publish_approved' ); ?>
 					<button type="submit" class="button button-primary">Publish all approved to Jekyll</button>
 				</form>
+				<button type="button" class="button" onclick="wpjsVerifyAll();">Verify all synced</button>
 				<label style="display:flex;align-items:center;gap:6px;">
 					<input type="checkbox" id="wpjs-auto-push" <?php checked( $auto_push, '1' ); ?> />
 					Auto-push when approving
@@ -1151,6 +1153,33 @@ class WPJS_Admin {
 				ajax_url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
 				nonce: '<?php echo esc_js( wp_create_nonce( 'wpjs_ajax' ) ); ?>'
 			};
+		}
+		function wpjsVerifyAll() {
+			var btns = document.querySelectorAll('.wpjs-verify-btn');
+			var i = 0;
+			function next() {
+				if (i >= btns.length) return;
+				btns[i].click();
+				i++;
+				setTimeout(next, 800);
+			}
+			next();
+		}
+		function wpjsVerify(el, postId, nonce) {
+			var span = document.getElementById('wpjs-verify-' + postId);
+			el.textContent = '...';
+			var url = (typeof wpjs !== 'undefined') ? wpjs.ajax_url : ajaxurl;
+			jQuery.post(url, {
+				action: 'wpjs_verify_sync',
+				_wpnonce: nonce,
+				post_id: postId
+			}, function(res) {
+				if (!res.success) { span.innerHTML = ' <span style="color:#d63638;">Error</span>'; el.textContent = 'Verify'; return; }
+				var d = res.data;
+				var colors = { synced: '#00a32a', different: '#dba617', missing: '#d63638' };
+				span.innerHTML = ' <span style="color:' + (colors[d.status] || '#666') + ';font-size:12px;">' + d.message + '</span>';
+				el.textContent = 'Verify';
+			}).fail(function() { span.innerHTML = ' <span style="color:#d63638;">Failed</span>'; el.textContent = 'Verify'; });
 		}
 		</script>
 		<?php
@@ -1621,6 +1650,60 @@ class WPJS_Admin {
 		if ( ! $att_id ) { wp_send_json_error( 'Invalid attachment.' ); }
 		update_post_meta( $att_id, '_wp_attachment_image_alt', $alt );
 		wp_send_json_success();
+	}
+
+	public function ajax_verify_sync() {
+		check_ajax_referer( 'wpjs_ajax' );
+		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Permission denied.' ); }
+		$id   = isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0;
+		$post = $id ? get_post( $id ) : null;
+		if ( ! $post ) { wp_send_json_error( 'Post not found.' ); }
+
+		// Generate what WP would push.
+		$wp_content = WPJS_Converter::post_to_markdown( $post );
+		$wp_hash    = md5( $wp_content );
+
+		// Fetch what's on Jekyll.
+		$filename = WPJS_Converter::filename( $post );
+		$base     = $post->post_type === 'page'
+			? WPJS_Settings::get( 'pages_path', '_pages' )
+			: WPJS_Settings::get( 'posts_path', '_posts' );
+		$path     = $base . '/' . $filename;
+
+		$client       = new WPJS_GitHub_Client();
+		$jekyll_content = $client->get_file_content( $path );
+
+		if ( is_wp_error( $jekyll_content ) ) {
+			wp_send_json_success( array(
+				'status'  => 'missing',
+				'message' => 'Not on Jekyll — file not found.',
+			) );
+		}
+
+		$jekyll_hash = md5( $jekyll_content );
+
+		if ( $wp_hash === $jekyll_hash ) {
+			wp_send_json_success( array(
+				'status'  => 'synced',
+				'message' => 'In sync — content matches.',
+			) );
+		}
+
+		// Content differs — count the differences.
+		$wp_lines     = explode( "\n", $wp_content );
+		$jekyll_lines = explode( "\n", $jekyll_content );
+		$diff_count   = 0;
+		$max          = max( count( $wp_lines ), count( $jekyll_lines ) );
+		for ( $i = 0; $i < $max; $i++ ) {
+			$a = $wp_lines[ $i ] ?? '';
+			$b = $jekyll_lines[ $i ] ?? '';
+			if ( $a !== $b ) { $diff_count++; }
+		}
+
+		wp_send_json_success( array(
+			'status'  => 'different',
+			'message' => sprintf( 'Out of sync — %d line(s) differ. Re-push to update.', $diff_count ),
+		) );
 	}
 
 	public function ajax_validate_ai() {

@@ -213,6 +213,7 @@ class WPJS_Articles_Table extends WP_List_Table {
 			admin_url( 'admin-post.php?action=wpjs_toggle_approve&post_id=' . $post->ID ),
 			'wpjs_toggle_approve_' . $post->ID
 		);
+		$nonce = wp_create_nonce( 'wpjs_ajax' );
 
 		// Sync status.
 		if ( ! $last_push ) {
@@ -226,6 +227,15 @@ class WPJS_Articles_Table extends WP_List_Table {
 			$label = 'Synced';
 		}
 
+		// Verify link (realtime check against GitHub).
+		$verify = '';
+		if ( $post->post_status === 'publish' ) {
+			$verify = sprintf(
+				'<br><a href="#" class="wpjs-verify-btn description" data-post-id="%d" data-nonce="%s" onclick="wpjsVerify(this,%d,\'%s\');return false;" style="font-size:12px;">Verify</a><span id="wpjs-verify-%d"></span>',
+				$post->ID, esc_attr( $nonce ), $post->ID, esc_attr( $nonce ), $post->ID
+			);
+		}
+
 		// Approve toggle.
 		if ( $approved ) {
 			$approve = sprintf( '<a href="%s" title="Click to unapprove" style="text-decoration:none;color:#00a32a;">✓ Ready</a>', esc_url( $approve_url ) );
@@ -233,7 +243,7 @@ class WPJS_Articles_Table extends WP_List_Table {
 			$approve = sprintf( '<a href="%s" title="Click to approve" style="text-decoration:none;color:#9ca1a7;">○ Queued</a>', esc_url( $approve_url ) );
 		}
 
-		return sprintf( '<span style="display:inline-flex;align-items:center;gap:4px;">%s %s</span><br>%s', $dot, $label, $approve );
+		return sprintf( '<span style="display:inline-flex;align-items:center;gap:4px;">%s %s</span><br>%s%s', $dot, $label, $approve, $verify );
 	}
 
 	public function column_last_push( $post ) {
