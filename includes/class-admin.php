@@ -52,7 +52,7 @@ class WPJS_Admin {
 
 		// Dashboard page JS.
 		if ( $hook === $this->dashboard_hook || $page === 'wpjs-dashboard' ) {
-			wp_enqueue_script( 'wpjs-articles', WPJS_URL . 'assets/articles.js', array( 'jquery', 'wp-util' ), WPJS_VERSION, true );
+			wp_enqueue_script( 'wpjs-articles', WPJS_URL . 'assets/articles.js', array( 'jquery' ), WPJS_VERSION, true );
 			wp_localize_script( 'wpjs-articles', 'wpjs', array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
 				'nonce'    => wp_create_nonce( 'wpjs_ajax' ),
@@ -62,7 +62,7 @@ class WPJS_Admin {
 
 		// Articles page JS.
 		if ( $hook === $this->articles_hook || $page === 'wpjs-articles' ) {
-			wp_enqueue_script( 'wpjs-articles', WPJS_URL . 'assets/articles.js', array( 'jquery', 'wp-util' ), WPJS_VERSION, true );
+			wp_enqueue_script( 'wpjs-articles', WPJS_URL . 'assets/articles.js', array( 'jquery' ), WPJS_VERSION, true );
 			wp_localize_script( 'wpjs-articles', 'wpjs', array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
 				'nonce'    => wp_create_nonce( 'wpjs_ajax' ),
@@ -1145,6 +1145,14 @@ class WPJS_Admin {
 				</div>
 			</div>
 		</div>
+		<script>
+		if (typeof wpjs === 'undefined') {
+			var wpjs = {
+				ajax_url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
+				nonce: '<?php echo esc_js( wp_create_nonce( 'wpjs_ajax' ) ); ?>'
+			};
+		}
+		</script>
 		<?php
 	}
 
