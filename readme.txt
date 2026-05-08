@@ -4,7 +4,7 @@ Tags: jekyll, github, github-pages, static-site, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 6.5.0
+Stable tag: 6.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,11 @@ No — image URLs remain pointing at your WordPress media library.
 No. You control what gets published via the Approved toggle + explicit push.
 
 == Changelog ==
+
+= 6.6.0 =
+* **Fixed false "Out of sync" on verify** — now compares stored push hash vs Jekyll file hash instead of regenerating markdown (which differs due to image paths).
+* Stores MD5 hash of pushed content on every push (`_wpjs_push_hash` meta).
+* Verify now shows accurate states: "Verified — Jekyll matches last push", "WP modified after push", "Jekyll file was modified externally", "Not on Jekyll".
 
 = 6.5.0 =
 * **Realtime sync verification** — "Verify" link per post checks WP content against the actual Jekyll file on GitHub.

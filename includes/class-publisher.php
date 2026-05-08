@@ -62,6 +62,7 @@ class WPJS_Publisher {
 		}
 
 		update_post_meta( $post->ID, self::META_LAST_PUSH, current_time( 'mysql' ) );
+		update_post_meta( $post->ID, '_wpjs_push_hash', md5( $content ) );
 
 		// Trigger GitHub Actions workflow if configured.
 		$workflow = WPJS_Settings::get( 'workflow_file', '' );

@@ -1659,9 +1659,7 @@ class WPJS_Admin {
 		$post = $id ? get_post( $id ) : null;
 		if ( ! $post ) { wp_send_json_error( 'Post not found.' ); }
 
-		// Generate what WP would push.
-		$wp_content = WPJS_Converter::post_to_markdown( $post );
-		$wp_hash    = md5( $wp_content );
+		$last_push = get_post_meta( $id, WPJS_Publisher::META_LAST_PUSH, true );
 
 		// Fetch what's on Jekyll.
 		$filename = WPJS_Converter::filename( $post );
@@ -1670,40 +1668,48 @@ class WPJS_Admin {
 			: WPJS_Settings::get( 'posts_path', '_posts' );
 		$path     = $base . '/' . $filename;
 
-		$client       = new WPJS_GitHub_Client();
+		$client         = new WPJS_GitHub_Client();
 		$jekyll_content = $client->get_file_content( $path );
 
+		// File not on Jekyll.
 		if ( is_wp_error( $jekyll_content ) ) {
-			wp_send_json_success( array(
-				'status'  => 'missing',
-				'message' => 'Not on Jekyll — file not found.',
-			) );
+			if ( $last_push ) {
+				// Was pushed before but file is gone.
+				wp_send_json_success( array( 'status' => 'missing', 'message' => 'File deleted from Jekyll — re-push to restore.' ) );
+			}
+			wp_send_json_success( array( 'status' => 'missing', 'message' => 'Not on Jekyll — push to create.' ) );
 		}
 
+		// File exists — check if WP was modified after last push.
+		if ( ! $last_push ) {
+			wp_send_json_success( array( 'status' => 'synced', 'message' => 'On Jekyll — no local push record.' ) );
+		}
+
+		$push_time = strtotime( $last_push );
+		$mod_time  = strtotime( $post->post_modified_gmt );
+
+		// Compare stored hash (from last push) with Jekyll file.
+		$stored_hash = get_post_meta( $id, '_wpjs_push_hash', true );
 		$jekyll_hash = md5( $jekyll_content );
 
-		if ( $wp_hash === $jekyll_hash ) {
-			wp_send_json_success( array(
-				'status'  => 'synced',
-				'message' => 'In sync — content matches.',
-			) );
+		if ( $stored_hash && $stored_hash === $jekyll_hash ) {
+			// Jekyll matches what we pushed.
+			if ( $mod_time > $push_time ) {
+				wp_send_json_success( array( 'status' => 'different', 'message' => 'WP modified after push — re-push to sync.' ) );
+			}
+			wp_send_json_success( array( 'status' => 'synced', 'message' => 'Verified — Jekyll matches last push.' ) );
 		}
 
-		// Content differs — count the differences.
-		$wp_lines     = explode( "\n", $wp_content );
-		$jekyll_lines = explode( "\n", $jekyll_content );
-		$diff_count   = 0;
-		$max          = max( count( $wp_lines ), count( $jekyll_lines ) );
-		for ( $i = 0; $i < $max; $i++ ) {
-			$a = $wp_lines[ $i ] ?? '';
-			$b = $jekyll_lines[ $i ] ?? '';
-			if ( $a !== $b ) { $diff_count++; }
+		if ( $stored_hash && $stored_hash !== $jekyll_hash ) {
+			wp_send_json_success( array( 'status' => 'different', 'message' => 'Jekyll file was modified externally — pull or re-push.' ) );
 		}
 
-		wp_send_json_success( array(
-			'status'  => 'different',
-			'message' => sprintf( 'Out of sync — %d line(s) differ. Re-push to update.', $diff_count ),
-		) );
+		// No stored hash — fall back to timestamp check.
+		if ( $mod_time > $push_time ) {
+			wp_send_json_success( array( 'status' => 'different', 'message' => 'WP modified after push — re-push to sync.' ) );
+		}
+
+		wp_send_json_success( array( 'status' => 'synced', 'message' => 'On Jekyll — last push appears current.' ) );
 	}
 
 	public function ajax_validate_ai() {
