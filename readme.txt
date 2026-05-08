@@ -426,8 +426,8 @@ WP.org compliance release. External services documented. Inline scripts replaced
 * Fixed column widths — Title, Author, Type, Date, Status, Approved, Last pushed, Actions all sized proportionally to eliminate excess spacing.
 
 = 2.0.0 =
-* Fixed URL rewriting — now correctly replaces all `wp.bogman.info` links with the Jekyll base URL.
-* Content tab shows active rewrite rule: `wp.bogman.info → raybogman.com`.
+* Fixed URL rewriting — now correctly replaces all WordPress domain links with the Jekyll base URL.
+* Content tab shows active rewrite rule with source and target URLs.
 * Re-push, Preview, Delete buttons aligned on one line (nowrap).
 * `get_jekyll_base_url()` made public for display on settings page.
 
