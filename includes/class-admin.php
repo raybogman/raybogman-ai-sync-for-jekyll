@@ -1227,30 +1227,53 @@ class WPJS_Admin {
 		}
 
 		$ok = 0; $fail = 0;
+		$details = array();
 		foreach ( $ids as $id ) {
 			$post = get_post( $id );
-			if ( ! $post ) { continue; }
+			if ( ! $post ) {
+				$details[] = '#' . $id . ' (not found)';
+				continue;
+			}
 
 			switch ( $bulk ) {
 				case 'bulk_approve':
 					WPJS_Publisher::set_approved( $id, true );
+					$details[] = $post->post_title . ' (approved)';
 					$ok++;
 					break;
 				case 'bulk_unapprove':
 					WPJS_Publisher::set_approved( $id, false );
+					$details[] = $post->post_title . ' (unapproved)';
 					$ok++;
 					break;
 				case 'bulk_push':
-					if ( $post->post_status !== 'publish' ) { $fail++; continue 2; }
+					if ( $post->post_status !== 'publish' ) {
+						$details[] = $post->post_title . ' (skipped: ' . $post->post_status . ')';
+						$fail++;
+						continue 2;
+					}
 					$r = WPJS_Publisher::publish( $post );
-					if ( is_wp_error( $r ) ) { $fail++; } else { $ok++; }
+					if ( is_wp_error( $r ) ) {
+						$details[] = $post->post_title . ' (ERROR: ' . $r->get_error_message() . ')';
+						$fail++;
+					} else {
+						$details[] = $post->post_title . ' (OK)';
+						$ok++;
+					}
 					break;
 				case 'bulk_delete':
 					$r = WPJS_Publisher::delete( $post );
-					if ( is_wp_error( $r ) ) { $fail++; } else { $ok++; }
+					if ( is_wp_error( $r ) ) {
+						$details[] = $post->post_title . ' (ERROR: ' . $r->get_error_message() . ')';
+						$fail++;
+					} else {
+						$details[] = $post->post_title . ' (deleted)';
+						$ok++;
+					}
 					break;
 				case 'bulk_ai':
 					WPJS_Publisher::generate_ai_metadata( $post );
+					$details[] = $post->post_title . ' (AI done)';
 					$ok++;
 					break;
 			}
@@ -1264,14 +1287,9 @@ class WPJS_Admin {
 			'bulk_ai'        => 'AI metadata generated',
 		);
 		$label = $labels[ $bulk ] ?? 'Processed';
-		$details = array();
-		foreach ( $ids as $id ) {
-			$p = get_post( $id );
-			if ( $p ) { $details[] = $p->post_title; }
-		}
 		$this->notice(
 			$fail ? 'warning' : 'success',
-			sprintf( '%s — succeeded: %d, failed: %d. Posts: %s', $label, $ok, $fail, implode( ', ', $details ) )
+			sprintf( '%s — succeeded: %d, failed: %d.<br>%s', $label, $ok, $fail, implode( '<br>', array_map( 'esc_html', $details ) ) )
 		);
 		wp_safe_redirect( admin_url( 'admin.php?page=wpjs-articles' ) );
 		exit;
