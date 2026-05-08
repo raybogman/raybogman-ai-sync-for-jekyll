@@ -4,7 +4,7 @@ Tags: jekyll, github, github-pages, static-site, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 6.2.1
+Stable tag: 6.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,10 @@ No — image URLs remain pointing at your WordPress media library.
 No. You control what gets published via the Approved toggle + explicit push.
 
 == Changelog ==
+
+= 6.3.0 =
+* **Fixed AI alt text not appearing after re-push** — converter now reads latest alt text from WP attachment meta (`_wp_attachment_image_alt`) instead of the stale HTML `alt` attribute.
+* Looks up attachment by `wp-image-{ID}` CSS class or URL-to-attachment-ID fallback.
 
 = 6.1.0 =
 * AI panel now always shows existing description/alt text for editing — works with or without AI API key.

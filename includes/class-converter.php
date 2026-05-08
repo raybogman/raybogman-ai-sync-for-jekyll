@@ -270,6 +270,23 @@ class WPJS_Converter {
 		$alt_txt = $alt[1] ?? '';
 		$classes = $cls[1] ?? '';
 
+		// Try to get the latest alt text from WP attachment meta (may have been updated by AI).
+		preg_match( '/wp-image-(\d+)/', $classes, $img_id );
+		if ( ! empty( $img_id[1] ) ) {
+			$meta_alt = get_post_meta( (int) $img_id[1], '_wp_attachment_image_alt', true );
+			if ( $meta_alt ) {
+				$alt_txt = $meta_alt;
+			}
+		} elseif ( $src_url ) {
+			$att_id = attachment_url_to_postid( $src_url );
+			if ( $att_id ) {
+				$meta_alt = get_post_meta( $att_id, '_wp_attachment_image_alt', true );
+				if ( $meta_alt ) {
+					$alt_txt = $meta_alt;
+				}
+			}
+		}
+
 		// Preserve as HTML if image has alignment classes.
 		if ( preg_match( '/align(left|right|center|none)/', $classes ) ) {
 			$style = '';
