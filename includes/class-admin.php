@@ -1115,6 +1115,17 @@ class WPJS_Admin {
 
 			<p>Use the checkboxes and <strong>Bulk Actions</strong> dropdown to approve, push, or delete multiple items. Or use the row buttons for individual actions.</p>
 
+			<?php
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
+			$type_filter = sanitize_text_field( wp_unslash( $_REQUEST['post_type_filter'] ?? '' ) );
+			$base_url    = admin_url( 'admin.php?page=wpjs-articles' );
+			?>
+			<ul class="subsubsub" style="margin:0 0 8px;">
+				<li><a href="<?php echo esc_url( $base_url ); ?>" <?php echo ! $type_filter ? 'class="current"' : ''; ?>>All</a> |</li>
+				<li><a href="<?php echo esc_url( add_query_arg( 'post_type_filter', 'post', $base_url ) ); ?>" <?php echo $type_filter === 'post' ? 'class="current"' : ''; ?>>Posts</a> |</li>
+				<li><a href="<?php echo esc_url( add_query_arg( 'post_type_filter', 'page', $base_url ) ); ?>" <?php echo $type_filter === 'page' ? 'class="current"' : ''; ?>>Pages</a></li>
+			</ul>
+
 			<div style="margin:12px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
 				<form method="post" action="<?php echo esc_url( $action ); ?>" style="margin:0;">
 					<input type="hidden" name="action" value="wpjs_publish_approved" />

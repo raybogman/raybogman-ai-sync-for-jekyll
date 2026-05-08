@@ -46,10 +46,10 @@ class WPJS_Articles_Table extends WP_List_Table {
 		$per_page = 20;
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Pagination/filter params, no data processing.
 		$paged    = max( 1, absint( wp_unslash( $_GET['paged'] ?? 1 ) ) );
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$search   = sanitize_text_field( wp_unslash( $_GET['s'] ?? '' ) );
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$filter   = sanitize_text_field( wp_unslash( $_GET['post_type_filter'] ?? '' ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
+		$search   = sanitize_text_field( wp_unslash( $_REQUEST['s'] ?? '' ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
+		$filter   = sanitize_text_field( wp_unslash( $_REQUEST['post_type_filter'] ?? '' ) );
 
 		$types = array();
 		if ( $filter ) {
@@ -258,8 +258,8 @@ class WPJS_Articles_Table extends WP_List_Table {
 
 	protected function extra_tablenav( $which ) {
 		if ( $which !== 'top' ) { return; }
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Filter display, no data processing.
-		$current = sanitize_text_field( wp_unslash( $_GET['post_type_filter'] ?? '' ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
+		$current = sanitize_text_field( wp_unslash( $_REQUEST['post_type_filter'] ?? '' ) );
 		?>
 		<div class="alignleft actions">
 			<select name="post_type_filter">
