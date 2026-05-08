@@ -39,7 +39,12 @@ class WPJS_AI_Client {
 		if ( ! file_exists( $file_path ) ) { return ''; }
 
 		$mime = wp_check_filetype( $file_path )['type'] ?? 'image/jpeg';
-		$data = file_get_contents( $file_path );
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+		$data = $wp_filesystem->get_contents( $file_path );
 		if ( ! $data ) { return ''; }
 		$base64 = base64_encode( $data );
 

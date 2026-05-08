@@ -1158,41 +1158,16 @@ class WPJS_Admin {
 				</div>
 			</div>
 		</div>
-		<script>
-		if (typeof wpjs === 'undefined') {
-			var wpjs = {
-				ajax_url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
-				nonce: '<?php echo esc_js( wp_create_nonce( 'wpjs_ajax' ) ); ?>'
-			};
-		}
-		function wpjsVerifyAll() {
-			var btns = document.querySelectorAll('.wpjs-verify-btn');
-			var i = 0;
-			function next() {
-				if (i >= btns.length) return;
-				btns[i].click();
-				i++;
-				setTimeout(next, 800);
-			}
-			next();
-		}
-		function wpjsVerify(el, postId, nonce) {
-			var span = document.getElementById('wpjs-verify-' + postId);
-			el.textContent = '...';
-			var url = (typeof wpjs !== 'undefined') ? wpjs.ajax_url : ajaxurl;
-			jQuery.post(url, {
-				action: 'wpjs_verify_sync',
-				_wpnonce: nonce,
-				post_id: postId
-			}, function(res) {
-				if (!res.success) { span.innerHTML = ' <span style="color:#d63638;">Error</span>'; el.textContent = 'Verify'; return; }
-				var d = res.data;
-				var colors = { synced: '#00a32a', different: '#dba617', missing: '#d63638' };
-				span.innerHTML = ' <span style="color:' + (colors[d.status] || '#666') + ';font-size:12px;">' + d.message + '</span>';
-				el.textContent = 'Verify';
-			}).fail(function() { span.innerHTML = ' <span style="color:#d63638;">Failed</span>'; el.textContent = 'Verify'; });
-		}
-		</script>
+		<?php
+		// Inline verify JS via wp_add_inline_script (WP.org compliant).
+		$verify_js = '
+		if(typeof wpjs==="undefined"){var wpjs={ajax_url:"' . esc_url( admin_url( 'admin-ajax.php' ) ) . '",nonce:"' . esc_js( wp_create_nonce( 'wpjs_ajax' ) ) . '"};}
+		function wpjsVerifyAll(){var b=document.querySelectorAll(".wpjs-verify-btn"),i=0;(function n(){if(i>=b.length)return;b[i].click();i++;setTimeout(n,800);})();}
+		function wpjsVerify(el,pid,nc){var s=document.getElementById("wpjs-verify-"+pid);el.textContent="...";jQuery.post(wpjs.ajax_url,{action:"wpjs_verify_sync",_wpnonce:nc,post_id:pid},function(r){if(!r.success){s.innerHTML=" <span style=\"color:#d63638;\">Error</span>";el.textContent="Verify";return;}var c={synced:"#00a32a",different:"#dba617",missing:"#d63638"};s.innerHTML=" <span style=\"color:"+(c[r.data.status]||"#666")+";font-size:12px;\">"+r.data.message+"</span>";el.textContent="Verify";}).fail(function(){s.innerHTML=" <span style=\"color:#d63638;\">Failed</span>";el.textContent="Verify";});}';
+		wp_register_script( 'wpjs-verify-inline', false, array( 'jquery' ), WPJS_VERSION, true );
+		wp_enqueue_script( 'wpjs-verify-inline' );
+		wp_add_inline_script( 'wpjs-verify-inline', $verify_js );
+		?>
 		<?php
 	}
 

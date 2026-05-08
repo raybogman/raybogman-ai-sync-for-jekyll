@@ -4,7 +4,7 @@ Tags: jekyll, github, github-pages, static-site, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 6.7.0
+Stable tag: 7.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -58,7 +58,49 @@ No — image URLs remain pointing at your WordPress media library.
 
 No. You control what gets published via the Approved toggle + explicit push.
 
+== External Services ==
+
+This plugin connects to external third-party services depending on your configuration:
+
+= GitHub API =
+
+* Service: [GitHub REST API](https://docs.github.com/en/rest)
+* Used for: OAuth authentication, listing repositories and branches, reading and writing Jekyll post files, uploading images, deleting files, triggering GitHub Actions workflows.
+* When: Every time you push, pull, delete, verify, or detect styles from your Jekyll repository.
+* Data sent: Your GitHub OAuth token, post content as Markdown, image files, commit messages.
+* [GitHub Terms of Service](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service)
+* [GitHub Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement)
+
+= Anthropic Claude API (Optional) =
+
+* Service: [Anthropic Messages API](https://docs.anthropic.com/en/docs/about-claude/models)
+* Used for: AI-generated SEO descriptions and image alt text.
+* When: Only when you click "Generate" in the AI panel or enable auto-generation. Never called without user action.
+* Data sent: Post text content (up to 2000 characters) for descriptions. Image data (base64 encoded) for alt text generation.
+* Requires: A valid Claude API key entered by the user.
+* [Anthropic Terms of Service](https://www.anthropic.com/legal/consumer-terms)
+* [Anthropic Privacy Policy](https://www.anthropic.com/legal/privacy)
+
+= OpenAI API (Optional) =
+
+* Service: [OpenAI Chat Completions API](https://platform.openai.com/docs/api-reference/chat)
+* Used for: AI-generated SEO descriptions and image alt text (alternative to Claude).
+* When: Only when you click "Generate" in the AI panel or enable auto-generation. Never called without user action.
+* Data sent: Post text content (up to 2000 characters) for descriptions. Image data (base64 encoded) for alt text generation.
+* Requires: A valid OpenAI API key entered by the user.
+* [OpenAI Terms of Use](https://openai.com/policies/terms-of-use/)
+* [OpenAI Privacy Policy](https://openai.com/policies/privacy-policy/)
+
 == Changelog ==
+
+= 7.0.0 =
+* **WP.org compliance release** — ready for plugin directory submission.
+* Replaced inline `<script>` with `wp_add_inline_script()`.
+* Replaced `file_get_contents()` with `WP_Filesystem` API (3 locations).
+* Added complete **External Services** section documenting GitHub, Claude, and OpenAI API usage with terms/privacy links.
+
+= 6.7.0 =
+* Added All | Posts | Pages filter tabs.
 
 = 6.6.0 =
 * **Fixed false "Out of sync" on verify** — now compares stored push hash vs Jekyll file hash instead of regenerating markdown (which differs due to image paths).

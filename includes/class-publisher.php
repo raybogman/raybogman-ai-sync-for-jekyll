@@ -132,7 +132,7 @@ class WPJS_Publisher {
 			}
 
 			if ( $file_path && file_exists( $file_path ) ) {
-				$image_data = file_get_contents( $file_path );
+				$image_data = self::read_file( $file_path );
 			} else {
 				// Download from WP URL.
 				$download_url = $wp_url;
@@ -177,7 +177,7 @@ class WPJS_Publisher {
 		$jekyll_filename = $slug . '.' . $ext;
 		$jekyll_path     = $images_dir . '/' . $jekyll_filename;
 
-		$image_data = file_get_contents( $file_path );
+		$image_data = self::read_file( $file_path );
 		if ( $image_data === false ) {
 			return new WP_Error( 'wpjs_image_read_failed', 'Could not read image file.' );
 		}
@@ -340,6 +340,15 @@ class WPJS_Publisher {
 			$ids = array_unique( array_map( 'intval', $matches[1] ) );
 		}
 		return $ids;
+	}
+
+	private static function read_file( $path ) {
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+		return $wp_filesystem->get_contents( $path );
 	}
 
 	public static function is_approved( $post_id ) {
