@@ -101,20 +101,21 @@ class WPJS_Articles_Table extends WP_List_Table {
 	public function column_actions( $post ) {
 		$is_pushed = (bool) get_post_meta( $post->ID, WPJS_Publisher::META_LAST_PUSH, true );
 		$links     = array();
+		$pid       = $post->ID;
 
 		if ( $post->post_status === 'publish' ) {
 			$push_url = wp_nonce_url(
-				admin_url( 'admin-post.php?action=wpjs_publish_one&post_id=' . $post->ID ),
-				'wpjs_publish_one_' . $post->ID
+				admin_url( 'admin-post.php?action=wpjs_publish_one&post_id=' . $pid ),
+				'wpjs_publish_one_' . $pid
 			);
 			$links[] = sprintf( '<a href="%s">%s</a>', esc_url( $push_url ), $is_pushed ? 'Re-push' : 'Push' );
-			$links[] = sprintf( '<a href="#" class="wpjs-preview-btn" data-post-id="%d">Preview</a>', $post->ID );
-			$links[] = sprintf( '<a href="#" class="wpjs-ai-btn" data-post-id="%d">AI</a>', $post->ID );
+			$links[] = sprintf( '<a href="#" class="wpjs-preview-btn" data-post-id="%d">Preview</a>', $pid );
+			$links[] = sprintf( '<a href="#" onclick="document.getElementById(\'wpjs-ai-panel-%d\').style.display=document.getElementById(\'wpjs-ai-panel-%d\').style.display===\'none\'?\'block\':\'none\';return false;">AI</a>', $pid, $pid );
 			if ( $is_pushed ) {
-				$links[] = sprintf( '<a href="#" class="wpjs-diff-btn" data-post-id="%d">Diff</a>', $post->ID );
+				$links[] = sprintf( '<a href="#" class="wpjs-diff-btn" data-post-id="%d">Diff</a>', $pid );
 				$del_url = wp_nonce_url(
-					admin_url( 'admin-post.php?action=wpjs_delete_one&post_id=' . $post->ID ),
-					'wpjs_delete_one_' . $post->ID
+					admin_url( 'admin-post.php?action=wpjs_delete_one&post_id=' . $pid ),
+					'wpjs_delete_one_' . $pid
 				);
 				$links[] = sprintf( '<a href="%s" style="color:#d63638;" onclick="return confirm(\'Delete from Jekyll?\');">Delete</a>', esc_url( $del_url ) );
 			}
@@ -122,7 +123,87 @@ class WPJS_Articles_Table extends WP_List_Table {
 			$links[] = '<span class="description">Draft</span>';
 		}
 
-		return implode( ' | ', $links );
+		$out = implode( ' | ', $links );
+
+		// Render AI panel inline (hidden by default).
+		if ( $post->post_status === 'publish' ) {
+			$out .= $this->render_ai_panel( $post );
+		}
+
+		return $out;
+	}
+
+	private function render_ai_panel( $post ) {
+		$pid       = $post->ID;
+		$excerpt   = html_entity_decode( get_the_excerpt( $post ), ENT_QUOTES | ENT_HTML5 );
+		$seo_desc  = get_post_meta( $pid, '_yoast_wpseo_metadesc', true )
+				  ?: get_post_meta( $pid, 'rank_math_description', true );
+		$desc      = $seo_desc ? html_entity_decode( $seo_desc, ENT_QUOTES | ENT_HTML5 ) : $excerpt;
+		$desc_src  = $seo_desc ? 'SEO plugin' : ( $excerpt ? 'excerpt' : 'empty' );
+		$has_ai    = WPJS_AI_Client::is_available();
+		$nonce     = wp_create_nonce( 'wpjs_ajax' );
+
+		// Collect images.
+		$images    = array();
+		$thumb_id  = get_post_thumbnail_id( $pid );
+		$image_ids = array();
+		if ( $thumb_id ) { $image_ids[] = $thumb_id; }
+		if ( preg_match_all( '/wp-image-(\d+)/', $post->post_content, $m ) ) {
+			$image_ids = array_merge( $image_ids, array_map( 'intval', $m[1] ) );
+		}
+		$image_ids = array_unique( $image_ids );
+		foreach ( $image_ids as $att_id ) {
+			$file = get_attached_file( $att_id );
+			$images[] = array(
+				'id'       => $att_id,
+				'filename' => $file ? basename( $file ) : 'image-' . $att_id,
+				'alt'      => get_post_meta( $att_id, '_wp_attachment_image_alt', true ),
+				'featured' => ( $att_id === $thumb_id ),
+			);
+		}
+
+		ob_start();
+		?>
+		<div id="wpjs-ai-panel-<?php echo (int) $pid; ?>" style="display:none;margin-top:10px;padding:12px;background:#f8f9fa;border-left:3px solid #2271b1;border-radius:2px;">
+			<div style="margin-bottom:8px;">
+				<strong>Description</strong> <em style="color:#666;">(<?php echo esc_html( $desc_src ); ?>)</em>
+			</div>
+			<div style="display:flex;gap:8px;align-items:flex-start;">
+				<textarea id="wpjs-desc-<?php echo (int) $pid; ?>" style="flex:1;padding:6px 8px;min-height:50px;resize:vertical;" maxlength="160"><?php echo esc_textarea( $desc ); ?></textarea>
+				<div style="display:flex;flex-direction:column;gap:4px;">
+					<?php if ( $has_ai ) : ?>
+						<button type="button" class="button wpjs-ai-regen-desc" data-post-id="<?php echo (int) $pid; ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>">Generate</button>
+					<?php endif; ?>
+					<button type="button" class="button button-primary wpjs-ai-save-desc" data-post-id="<?php echo (int) $pid; ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>">Save</button>
+				</div>
+			</div>
+			<p class="description" style="margin:4px 0 0;">
+				<span id="wpjs-desc-count-<?php echo (int) $pid; ?>"><?php echo strlen( $desc ); ?></span>/160 characters
+			</p>
+
+			<?php if ( $images ) : ?>
+				<div style="margin-top:12px;border-top:1px solid #dcdcde;padding-top:12px;">
+					<strong>Image Alt Text</strong> (<?php echo count( $images ); ?>)
+				</div>
+				<?php foreach ( $images as $img ) : ?>
+					<div style="margin-top:8px;">
+						<span class="description"><?php echo esc_html( $img['filename'] ); ?></span>
+						<?php if ( $img['featured'] ) : ?>
+							<span style="background:#2271b1;color:#fff;font-size:10px;padding:2px 6px;border-radius:2px;vertical-align:middle;">featured</span>
+						<?php endif; ?>
+					</div>
+					<div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
+						<input type="text" id="wpjs-alt-<?php echo (int) $img['id']; ?>" value="<?php echo esc_attr( $img['alt'] ); ?>" style="flex:1;padding:4px 8px;" maxlength="125" placeholder="Enter alt text..." />
+						<?php if ( $has_ai ) : ?>
+							<button type="button" class="button wpjs-ai-regen-alt" data-att-id="<?php echo (int) $img['id']; ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>">Generate</button>
+						<?php endif; ?>
+						<button type="button" class="button wpjs-ai-save-alt" data-att-id="<?php echo (int) $img['id']; ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>">Save</button>
+					</div>
+				<?php endforeach; ?>
+			<?php endif; ?>
+		</div>
+		<?php
+		return ob_get_clean();
 	}
 
 	public function column_status( $post ) {

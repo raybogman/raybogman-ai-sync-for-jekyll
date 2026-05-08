@@ -84,89 +84,28 @@
 		});
 	});
 
-	/* ─── AI Generate ───────────────────────────────── */
+	/* ─── AI panel: Generate & Save (panels rendered server-side in PHP) ─── */
 
-	$(document).on('click', '.wpjs-ai-btn', function (e) {
-		e.preventDefault();
-		var btn    = $(this);
-		var postId = btn.data('post-id');
-		var row    = btn.closest('tr');
-		var cols   = row.find('td').length;
+	function getAjax() {
+		return (typeof wpjs !== 'undefined') ? wpjs.ajax_url : ajaxurl;
+	}
+	function getNonce(btn) {
+		return btn.data('nonce') || ((typeof wpjs !== 'undefined') ? wpjs.nonce : '');
+	}
 
-		// Remove any existing AI panel for this row.
-		row.next('.wpjs-ai-panel').remove();
-		btn.text('...').prop('disabled', true);
-
-		$.post(wpjs.ajax_url, {
-			action:   'wpjs_generate_ai',
-			_wpnonce: wpjs.nonce,
-			post_id:  postId
-		}, function (res) {
-			btn.text('AI').prop('disabled', false);
-			if (!res.success) { alert('Failed: ' + res.data); return; }
-			var d = res.data;
-			var hasAI = d.ai_available;
-			var html = '<tr class="wpjs-ai-panel"><td colspan="' + cols + '" style="background:#f8f9fa;padding:12px 16px;border-left:3px solid #2271b1;">';
-
-			// Description section.
-			var srcLabels = { ai: 'AI generated', seo: 'from SEO plugin', excerpt: 'from excerpt' };
-			var src = srcLabels[d.description_source] ? ' <em style="color:#666;">(' + srcLabels[d.description_source] + ')</em>' : '';
-			html += '<div style="margin-bottom:8px;"><strong>Description</strong>' + src + '</div>';
-			html += '<div style="display:flex;gap:8px;align-items:flex-start;">';
-			html += '<textarea class="wpjs-ai-desc-input" data-post-id="' + postId + '" style="flex:1;padding:6px 8px;min-height:50px;resize:vertical;" maxlength="160">' + escHtml(d.description || '') + '</textarea>';
-			html += '<div style="display:flex;flex-direction:column;gap:4px;">';
-			if (hasAI) {
-				html += '<button type="button" class="button wpjs-ai-regen-desc" data-post-id="' + postId + '" title="Generate with AI">Generate</button>';
-			}
-			html += '<button type="button" class="button button-primary wpjs-ai-save-desc" data-post-id="' + postId + '">Save</button>';
-			html += '</div></div>';
-			html += '<p class="description" style="margin:4px 0 0;"><span class="wpjs-ai-desc-count">' + (d.description || '').length + '</span>/160 characters</p>';
-
-			// Images section.
-			if (d.images && d.images.length) {
-				html += '<div style="margin-top:16px;border-top:1px solid #dcdcde;padding-top:12px;"><strong>Image Alt Text</strong> (' + d.images.length + ')</div>';
-				$.each(d.images, function (i, img) {
-					var badge = img.featured ? ' <span style="background:#2271b1;color:#fff;font-size:10px;padding:2px 6px;border-radius:2px;vertical-align:middle;">featured</span>' : '';
-					var srcLabel = img.source === 'ai' ? ' <em style="color:#2271b1;">(AI)</em>' : img.source === 'none' ? ' <em style="color:#999;">(empty)</em>' : '';
-					html += '<div style="margin-top:10px;"><span class="description">' + escHtml(img.filename) + '</span>' + badge + srcLabel + '</div>';
-					html += '<div style="display:flex;gap:8px;align-items:center;margin-top:4px;">';
-					html += '<input type="text" class="wpjs-ai-alt-input" data-att-id="' + img.id + '" value="' + escAttr(img.alt || '') + '" style="flex:1;padding:4px 8px;" maxlength="125" placeholder="Enter alt text..." />';
-					if (hasAI) {
-						html += '<button type="button" class="button wpjs-ai-regen-alt" data-att-id="' + img.id + '" title="Generate with AI">Generate</button>';
-					}
-					html += '<button type="button" class="button wpjs-ai-save-alt" data-att-id="' + img.id + '">Save</button>';
-					html += '</div>';
-				});
-			}
-
-			html += '<div style="margin-top:12px;border-top:1px solid #dcdcde;padding-top:12px;"><button type="button" class="button wpjs-ai-close">Close</button></div>';
-			html += '</td></tr>';
-			row.after(html);
-		}).fail(function () {
-			btn.text('AI').prop('disabled', false);
-		});
-	});
-
-	// Character count for description textarea.
-	$(document).on('input', '.wpjs-ai-desc-input', function () {
+	// Description textarea character count.
+	$(document).on('input', 'textarea[id^="wpjs-desc-"]', function () {
+		var pid = this.id.replace('wpjs-desc-', '');
 		var len = $(this).val().length;
-		var counter = $(this).closest('td').find('.wpjs-ai-desc-count');
-		counter.text(len);
-		counter.css('color', len > 160 ? '#d63638' : '');
+		$('#wpjs-desc-count-' + pid).text(len).css('color', len > 160 ? '#d63638' : '');
 	});
 
-	// Close AI panel.
-	$(document).on('click', '.wpjs-ai-close', function () {
-		$(this).closest('.wpjs-ai-panel').remove();
-	});
-
-	// Regenerate description.
+	// Generate description with AI.
 	$(document).on('click', '.wpjs-ai-regen-desc', function () {
-		var btn = $(this);
-		var postId = btn.data('post-id');
-		var input = btn.closest('td').find('.wpjs-ai-desc-input');
+		var btn = $(this), postId = btn.data('post-id'), nonce = getNonce(btn);
+		var input = $('#wpjs-desc-' + postId);
 		btn.prop('disabled', true).text('...');
-		$.post(wpjs.ajax_url, { action: 'wpjs_regen_description', _wpnonce: wpjs.nonce, post_id: postId }, function (res) {
+		jQuery.post(getAjax(), { action: 'wpjs_regen_description', _wpnonce: nonce, post_id: postId }, function (res) {
 			btn.prop('disabled', false).text('Generate');
 			if (res.success) { input.val(res.data.description).trigger('input'); }
 			else { alert(res.data); }
@@ -175,23 +114,21 @@
 
 	// Save description.
 	$(document).on('click', '.wpjs-ai-save-desc', function () {
-		var btn = $(this);
-		var postId = btn.data('post-id');
-		var desc = btn.parent().find('.wpjs-ai-desc-input').val();
+		var btn = $(this), postId = btn.data('post-id'), nonce = getNonce(btn);
+		var desc = $('#wpjs-desc-' + postId).val();
 		btn.prop('disabled', true).text('...');
-		$.post(wpjs.ajax_url, { action: 'wpjs_save_description', _wpnonce: wpjs.nonce, post_id: postId, description: desc }, function (res) {
-			btn.prop('disabled', false).text(res.success ? 'Saved' : 'Error');
+		jQuery.post(getAjax(), { action: 'wpjs_save_description', _wpnonce: nonce, post_id: postId, description: desc }, function (res) {
+			btn.prop('disabled', false).text(res.success ? 'Saved!' : 'Error');
 			if (res.success) { setTimeout(function () { btn.text('Save'); }, 2000); }
 		}).fail(function () { btn.prop('disabled', false).text('Save'); });
 	});
 
-	// Regenerate alt text.
+	// Generate alt text with AI.
 	$(document).on('click', '.wpjs-ai-regen-alt', function () {
-		var btn = $(this);
-		var attId = btn.data('att-id');
-		var input = btn.parent().find('.wpjs-ai-alt-input');
-		btn.prop('disabled', true).html('&#x21bb;...');
-		$.post(wpjs.ajax_url, { action: 'wpjs_regen_alt', _wpnonce: wpjs.nonce, attachment_id: attId }, function (res) {
+		var btn = $(this), attId = btn.data('att-id'), nonce = getNonce(btn);
+		var input = $('#wpjs-alt-' + attId);
+		btn.prop('disabled', true).text('...');
+		jQuery.post(getAjax(), { action: 'wpjs_regen_alt', _wpnonce: nonce, attachment_id: attId }, function (res) {
 			btn.prop('disabled', false).text('Generate');
 			if (res.success) { input.val(res.data.alt); }
 			else { alert(res.data); }
@@ -200,17 +137,14 @@
 
 	// Save alt text.
 	$(document).on('click', '.wpjs-ai-save-alt', function () {
-		var btn = $(this);
-		var attId = btn.data('att-id');
-		var alt = btn.parent().find('.wpjs-ai-alt-input').val();
+		var btn = $(this), attId = btn.data('att-id'), nonce = getNonce(btn);
+		var alt = $('#wpjs-alt-' + attId).val();
 		btn.prop('disabled', true).text('...');
-		$.post(wpjs.ajax_url, { action: 'wpjs_save_alt', _wpnonce: wpjs.nonce, attachment_id: attId, alt: alt }, function (res) {
-			btn.prop('disabled', false).text(res.success ? 'Saved' : 'Error');
+		jQuery.post(getAjax(), { action: 'wpjs_save_alt', _wpnonce: nonce, attachment_id: attId, alt: alt }, function (res) {
+			btn.prop('disabled', false).text(res.success ? 'Saved!' : 'Error');
 			if (res.success) { setTimeout(function () { btn.text('Save'); }, 2000); }
 		}).fail(function () { btn.prop('disabled', false).text('Save'); });
 	});
-
-	function escAttr(s) { return s ? s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
 
 	/* ─── Clear log ─────────────────────────────────── */
 
