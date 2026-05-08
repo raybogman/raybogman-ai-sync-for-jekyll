@@ -1,10 +1,11 @@
 === Ray Bogman Jekyll Sync ===
 Contributors: raybogman
-Tags: jekyll, github, github-pages, static-site, sync
+Donate link: https://raybogman.com
+Tags: github, github-pages, static-site, markdown, sync
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 7.0.0
+Stable tag: 7.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -90,6 +91,22 @@ This plugin connects to external third-party services depending on your configur
 * Requires: A valid OpenAI API key entered by the user.
 * [OpenAI Terms of Use](https://openai.com/policies/terms-of-use/)
 * [OpenAI Privacy Policy](https://openai.com/policies/privacy-policy/)
+
+== Screenshots ==
+
+1. **Articles** — manage posts and pages with push, preview, AI, diff, delete, and verify actions.
+2. **Dashboard** — stats overview with total posts, synced, outdated, and recent activity log.
+3. **Connection Settings** — GitHub OAuth login, repo/branch picker, AI provider configuration.
+4. **Content Settings** — content mapping, URL rewriting, author selection.
+5. **Formatting** — style detection from your Jekyll site with front matter and Markdown analysis.
+6. **AI Panel** — inline description editor and image alt text generator with regenerate and save.
+7. **Diff View** — compare current WordPress content with what is live on Jekyll.
+8. **Pull from Jekyll** — import Jekyll posts back into WordPress.
+
+== Upgrade Notice ==
+
+= 7.0.0 =
+WP.org compliance release. External services documented. Inline scripts replaced with wp_add_inline_script. file_get_contents replaced with WP_Filesystem.
 
 == Changelog ==
 
