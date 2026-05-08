@@ -697,6 +697,19 @@ class WPJS_Admin {
 					<li><a href="#faq-supported-content">What content types are supported?</a></li>
 					<li><a href="#faq-inline-images">Are inline images uploaded to Jekyll?</a></li>
 					<li><a href="#faq-api-limits">Are there GitHub API rate limits?</a></li>
+					<li><a href="#faq-dashboard">What is the Dashboard?</a></li>
+					<li><a href="#faq-sync-history">What is the Sync History Log?</a></li>
+					<li><a href="#faq-diff-view">What is the Diff view?</a></li>
+					<li><a href="#faq-ai-description">How does AI description generation work?</a></li>
+					<li><a href="#faq-ai-alt-text">How does AI image alt text work?</a></li>
+					<li><a href="#faq-github-actions">What is the GitHub Actions trigger?</a></li>
+					<li><a href="#faq-auto-push-publish">What is auto-push on publish?</a></li>
+					<li><a href="#faq-scheduled-sync">What is scheduled auto-sync?</a></li>
+					<li><a href="#faq-pull-jekyll">How does Pull from Jekyll work?</a></li>
+					<li><a href="#faq-verify">What does Verify do?</a></li>
+					<li><a href="#faq-inline-body-images">Are inline body images synced?</a></li>
+					<li><a href="#faq-image-alignment">Is image alignment preserved?</a></li>
+					<li><a href="#faq-seo-plugins">Does it support Yoast SEO and RankMath?</a></li>
 				</ol>
 			</div>
 
@@ -784,12 +797,77 @@ class WPJS_Admin {
 
 			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-inline-images">
 				<h3 style="margin-top:0;">Are inline images uploaded to Jekyll?</h3>
-				<p>Currently, only featured images are uploaded to the Jekyll repository. Inline images within the post body retain their WordPress URLs. Inline image upload is planned for a future release.</p>
+				<p>Yes. Both featured images and inline body images are uploaded to your Jekyll repository. All images with /wp-content/uploads/ URLs are uploaded to assets/images/ and their URLs rewritten to Jekyll-native paths.</p>
 			</div>
 
 			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-api-limits">
 				<h3 style="margin-top:0;">Are there GitHub API rate limits?</h3>
 				<p>GitHub allows 5,000 API requests per hour for authenticated users. Each post push uses 2-3 requests (check existing file + create/update), and style detection uses about 7 requests. Normal usage is well within limits. Bulk-pushing 50 posts at once uses approximately 100-150 requests.</p>
+			</div>
+
+			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-dashboard">
+				<h3 style="margin-top:0;">What is the Dashboard?</h3>
+				<p>Stats overview: total posts, synced, outdated, not published, approved. Shows recent sync activity log and quick action buttons.</p>
+			</div>
+
+			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-sync-history">
+				<h3 style="margin-top:0;">What is the Sync History Log?</h3>
+				<p>Tracks every push, delete, and pull action with timestamp, user, post title, path, and result. View on the Log tab. Max 500 entries with Clear Log button.</p>
+			</div>
+
+			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-diff-view">
+				<h3 style="margin-top:0;">What is the Diff view?</h3>
+				<p>Compares current WP content against what's live on Jekyll. Shows color-coded additions (green) and deletions (red) before re-pushing.</p>
+			</div>
+
+			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-ai-description">
+				<h3 style="margin-top:0;">How does AI description generation work?</h3>
+				<p>If enabled and an API key is configured (Claude or OpenAI), clicking AI on a post generates a 1-2 sentence SEO description (max 160 chars). You can edit, regenerate, or save. Saved as WP excerpt.</p>
+			</div>
+
+			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-ai-alt-text">
+				<h3 style="margin-top:0;">How does AI image alt text work?</h3>
+				<p>Uses AI vision (Claude or OpenAI) to describe images. Works for featured and inline images. Alt text saved to WP attachment meta and used in Jekyll output.</p>
+			</div>
+
+			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-github-actions">
+				<h3 style="margin-top:0;">What is the GitHub Actions trigger?</h3>
+				<p>Optional. Enter a workflow filename (e.g. jekyll.yml) on the Connection tab. After each push, the plugin triggers that workflow via the GitHub API to rebuild your Jekyll site.</p>
+			</div>
+
+			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-auto-push-publish">
+				<h3 style="margin-top:0;">What is auto-push on publish?</h3>
+				<p>When enabled on the Connection tab, publishing or updating a post in WordPress automatically pushes it to Jekyll. No manual push needed.</p>
+			</div>
+
+			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-scheduled-sync">
+				<h3 style="margin-top:0;">What is scheduled auto-sync?</h3>
+				<p>WP-Cron based. Configure an interval (1/6/12/24 hours) and mode (approved &amp; outdated only, or all published) on the Connection tab. The plugin automatically pushes content on schedule.</p>
+			</div>
+
+			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-pull-jekyll">
+				<h3 style="margin-top:0;">How does Pull from Jekyll work?</h3>
+				<p>The Pull tab lists all Markdown files in your Jekyll _posts directory. You can import individual posts or all new posts at once. Creates WP posts as drafts with parsed content.</p>
+			</div>
+
+			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-verify">
+				<h3 style="margin-top:0;">What does Verify do?</h3>
+				<p>Compares the stored push hash against the actual Jekyll file on GitHub. Shows if content matches, if WP was modified after push, if the Jekyll file was externally edited, or if the file is missing.</p>
+			</div>
+
+			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-inline-body-images">
+				<h3 style="margin-top:0;">Are inline body images synced?</h3>
+				<p>Yes. All images in the post body with /wp-content/uploads/ URLs are uploaded to Jekyll assets/images/ and their URLs rewritten to Jekyll-native paths.</p>
+			</div>
+
+			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-image-alignment">
+				<h3 style="margin-top:0;">Is image alignment preserved?</h3>
+				<p>Yes. WordPress alignment classes (alignright, alignleft, aligncenter) are converted to inline CSS styles in the HTML img tag, preserving the layout in Jekyll.</p>
+			</div>
+
+			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-seo-plugins">
+				<h3 style="margin-top:0;">Does it support Yoast SEO and RankMath?</h3>
+				<p>Yes. The plugin auto-detects meta description and focus keywords from Yoast SEO and RankMath and maps them to Jekyll front matter fields.</p>
 			</div>
 		</div>
 		<?php
@@ -837,6 +915,19 @@ class WPJS_Admin {
 						<tr><td>Auto-push on Approve</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
 						<tr><td>Connection Validation</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
 						<tr><td>Posts &amp; Pages Support</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
+						<tr><td>Dashboard &amp; Activity Log</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
+						<tr><td>Sync History (Log Tab)</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
+						<tr><td>Diff View (WP vs Jekyll)</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
+						<tr><td>AI Description Generator</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
+						<tr><td>AI Image Alt Text (Vision)</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
+						<tr><td>GitHub Actions Trigger</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
+						<tr><td>Auto-push on Publish</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
+						<tr><td>Scheduled Auto-Sync (WP-Cron)</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
+						<tr><td>Pull from Jekyll (Two-way)</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
+						<tr><td>Sync Verification</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
+						<tr><td>Inline Image Upload</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
+						<tr><td>Image Alignment Preservation</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
+						<tr><td>SEO Metadata (Yoast/RankMath)</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
 					</tbody>
 				</table>
 			</div>
