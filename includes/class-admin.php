@@ -726,8 +726,8 @@ class WPJS_Admin {
 			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-callback-url">
 				<h3 style="margin-top:0;">What is the OAuth callback URL?</h3>
 				<p>The callback URL is shown on the Connection tab when you first set up the plugin. It looks like:<br>
-				<code><?php echo esc_html( WPJS_GitHub_OAuth::callback_url() ); ?></code><br>
-				You must enter this exact URL in your GitHub OAuth App settings as the "Authorization callback URL".</p>
+				<code>https://example.com/wp-admin/admin-post.php?action=wpjs_oauth_callback</code><br>
+				Replace <code>example.com</code> with your own domain. You must enter this exact URL in your GitHub OAuth App settings as the "Authorization callback URL".</p>
 			</div>
 
 			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-style-detection">
