@@ -1,19 +1,19 @@
-=== Ray Bogman Jekyll Sync ===
+=== Ray Bogman AI Sync for Jekyll & GitHub Pages ===
 Contributors: raybogman
 Donate link: https://raybogman.com
-Tags: github, github-pages, static-site, markdown, sync
+Tags: jekyll, markdown, static site, sync, deployment
 Requires at least: 5.8
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 7.1.0
+Stable tag: 7.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Push WordPress posts and pages to a Jekyll GitHub Pages repository as Markdown with YAML front matter.
+Publish WordPress posts to Jekyll on GitHub Pages as Markdown with YAML front matter. Optional AI for SEO descriptions and image alt text.
 
 == Description ==
 
-Ray Bogman Jekyll Sync lets you edit content in WordPress and publish it to a Jekyll site hosted on GitHub Pages.
+Ray Bogman AI Sync for Jekyll & GitHub Pages lets you edit content in WordPress and publish it to a Jekyll site hosted on GitHub Pages. Jekyll and GitHub are projects/trademarks of their respective owners; this plugin is an independent integration and is not affiliated with or endorsed by either.
 
 Features:
 
@@ -45,7 +45,7 @@ Features:
 
 = What does this plugin do? =
 
-Ray Bogman Jekyll Sync lets you publish WordPress posts and pages to a Jekyll site hosted on GitHub Pages. It converts your HTML content to Markdown with YAML front matter, uploads featured images, rewrites internal links, and commits everything directly to your GitHub repository — all from within the WordPress admin.
+This plugin lets you publish WordPress posts and pages to a Jekyll site hosted on GitHub Pages. It converts your HTML content to Markdown with YAML front matter, uploads featured images, rewrites internal links, and commits everything directly to your GitHub repository — all from within the WordPress admin. Optional AI (Claude or OpenAI) generates SEO descriptions and image alt text on demand.
 
 = How does the GitHub login work? =
 
@@ -213,10 +213,23 @@ This plugin connects to external third-party services depending on your configur
 
 == Upgrade Notice ==
 
+= 7.2.0 =
+Renamed to "Ray Bogman AI Sync for Jekyll & GitHub Pages" to clarify non-affiliation with Jekyll/GitHub per WordPress.org plugin guidelines. Output escaping hardened. Tags cleaned of brand-only terms. No functional changes.
+
 = 7.0.0 =
 WP.org compliance release. External services documented. Inline scripts replaced with wp_add_inline_script. file_get_contents replaced with WP_Filesystem.
 
 == Changelog ==
+
+= 7.2.0 =
+* **Renamed** to "Ray Bogman AI Sync for Jekyll & GitHub Pages" — clarifies non-affiliation with the Jekyll and GitHub projects per WordPress.org naming guidelines (`for Jekyll` pattern).
+* Hardened output escaping on the Style profile container (`esc_attr` on inline `style` attribute) — silences Plugin Check warning.
+* Replaced brand-only readme tags (`github`, `github-pages`) with neutral keywords (`jekyll`, `static site`, `deployment`).
+* Bumped "Tested up to" to **7.0** and tightened the short description to ≤150 chars (Plugin Check requirements).
+* Escaped `strlen()` output in the Articles table description counter (`esc_html`/`(int)` cast) — silences Plugin Check `OutputNotEscaped` error.
+* Scoped `set_time_limit(300)` more defensively: skipped when host blocks via `disable_functions`, suppressed via `@`, and explicitly justified with a phpcs annotation. Still gated by nonce + capability.
+* Updated About and FAQ tabs to reflect the new product name and clarify the optional AI capabilities.
+* No functional or breaking changes — slug, text domain, options, and stored data are unchanged. Existing installs auto-update without configuration loss.
 
 = 7.0.0 =
 * **WP.org compliance release** — ready for plugin directory submission.

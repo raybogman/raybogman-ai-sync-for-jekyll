@@ -178,7 +178,7 @@ class WPJS_Articles_Table extends WP_List_Table {
 				</div>
 			</div>
 			<p class="description" style="margin:4px 0 0;">
-				<span id="wpjs-desc-count-<?php echo (int) $pid; ?>"><?php echo strlen( $desc ); ?></span>/160 characters
+				<span id="wpjs-desc-count-<?php echo (int) $pid; ?>"><?php echo (int) strlen( $desc ); ?></span>/160 characters
 			</p>
 
 			<?php if ( $images ) : ?>

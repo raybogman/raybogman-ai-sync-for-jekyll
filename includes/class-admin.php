@@ -41,7 +41,7 @@ class WPJS_Admin {
 	private $dashboard_hook = '';
 
 	public function menu() {
-		$this->dashboard_hook = add_menu_page( 'Jekyll Sync', 'Jekyll Sync', 'manage_options', 'wpjs-dashboard', array( $this, 'render_dashboard' ), 'dashicons-share-alt', 30 );
+		$this->dashboard_hook = add_menu_page( 'Ray Bogman AI Sync for Jekyll & GitHub Pages', 'Jekyll Sync', 'manage_options', 'wpjs-dashboard', array( $this, 'render_dashboard' ), 'dashicons-share-alt', 30 );
 		add_submenu_page( 'wpjs-dashboard', 'Dashboard', 'Dashboard', 'manage_options', 'wpjs-dashboard', array( $this, 'render_dashboard' ) );
 		$this->articles_hook = add_submenu_page( 'wpjs-dashboard', 'Articles', 'Articles', 'manage_options', 'wpjs-articles', array( $this, 'render_articles' ) );
 		$this->settings_hook = add_submenu_page( 'wpjs-dashboard', 'Settings', 'Settings', 'manage_options', 'wpjs-settings', array( $this, 'render_settings' ) );
@@ -226,7 +226,7 @@ class WPJS_Admin {
 		<div class="wrap">
 			<h1>
 				<span class="dashicons dashicons-share-alt" style="font-size:28px;width:28px;height:28px;vertical-align:middle;margin-right:8px;"></span>
-				Ray Bogman Jekyll Sync — Settings
+				Ray Bogman AI Sync for Jekyll &amp; GitHub Pages — Settings
 			</h1>
 
 			<nav class="nav-tab-wrapper" style="margin-bottom:16px;">
@@ -620,7 +620,7 @@ class WPJS_Admin {
 					</p>
 				</div>
 
-				<div id="wpjs-style-profile" style="<?php echo $has_profile ? '' : 'display:none;'; ?>">
+				<div id="wpjs-style-profile" style="<?php echo esc_attr( $has_profile ? '' : 'display:none;' ); ?>">
 					<div class="card" style="max-width:720px;padding:20px;margin-top:16px;">
 						<h2 style="margin-top:0;">Detected Profile</h2>
 						<div id="wpjs-profile-meta">
@@ -715,7 +715,7 @@ class WPJS_Admin {
 
 			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-what-does-it-do">
 				<h3 style="margin-top:0;">What does this plugin do?</h3>
-				<p>Ray Bogman Jekyll Sync lets you publish WordPress posts and pages to a Jekyll site hosted on GitHub Pages. It converts your HTML content to Markdown with YAML front matter, uploads featured images, rewrites internal links, and commits everything directly to your GitHub repository — all from within the WordPress admin.</p>
+				<p>This plugin lets you publish WordPress posts and pages to a Jekyll site hosted on GitHub Pages. It converts your HTML content to Markdown with YAML front matter, uploads featured images, rewrites internal links, and commits everything directly to your GitHub repository — all from within the WordPress admin. Optional AI (Claude or OpenAI) generates SEO descriptions and image alt text on demand. <em>Not affiliated with Jekyll or GitHub.</em></p>
 			</div>
 
 			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-github-oauth">
@@ -880,10 +880,13 @@ class WPJS_Admin {
 			<div class="card" style="padding:16px 20px;">
 				<h2 style="margin-top:0;">
 					<span class="dashicons dashicons-share-alt" style="font-size:24px;width:24px;height:24px;color:#2271b1;margin-right:8px;vertical-align:middle;"></span>
-					About Ray Bogman Jekyll Sync
+					About Ray Bogman AI Sync for Jekyll &amp; GitHub Pages
 				</h2>
 				<p style="font-size:14px;line-height:1.6;">
-					<strong>Ray Bogman Jekyll Sync</strong> bridges the gap between WordPress content management and Jekyll static site generation. Write and manage your content in WordPress, then publish directly to your Jekyll GitHub Pages site with a single click.
+					<strong>Ray Bogman AI Sync for Jekyll &amp; GitHub Pages</strong> bridges the gap between WordPress content management and Jekyll static site generation. Write and manage your content in WordPress, then publish directly to your Jekyll GitHub Pages site with a single click. An optional AI panel (Claude or OpenAI) generates SEO descriptions and image alt text on demand — no required cloud dependency.
+				</p>
+				<p style="font-size:13px;line-height:1.6;color:#646970;font-style:italic;">
+					Jekyll and GitHub are projects/trademarks of their respective owners. This plugin is an independent integration and is not affiliated with or endorsed by either.
 				</p>
 				<p style="font-size:14px;line-height:1.6;">
 					The plugin handles the entire conversion pipeline: HTML to Markdown, YAML front matter generation, featured image uploads, internal link rewriting, and Git commits — all through the GitHub API, no CLI or server-side Git required.
@@ -979,7 +982,7 @@ class WPJS_Admin {
 
 			<div class="card" style="padding:16px 20px;text-align:center;">
 				<p style="color:#50575e;font-size:13px;margin:0;">
-					Ray Bogman Jekyll Sync v<?php echo esc_html( WPJS_VERSION ); ?> · &copy; <?php echo esc_html( gmdate( 'Y' ) ); ?>
+					Ray Bogman AI Sync for Jekyll &amp; GitHub Pages v<?php echo esc_html( WPJS_VERSION ); ?> · &copy; <?php echo esc_html( gmdate( 'Y' ) ); ?>
 					<a href="https://raybogman.com" target="_blank" rel="noopener" style="color:#50575e;">Ray Bogman</a>
 				</p>
 			</div>
@@ -1082,7 +1085,7 @@ class WPJS_Admin {
 					<div style="flex:1;min-width:400px;">
 						<h2 style="margin-top:0;">
 							<span class="dashicons dashicons-share-alt" style="font-size:24px;width:24px;height:24px;color:#00a32a;margin-right:8px;vertical-align:middle;"></span>
-							Ray Bogman Jekyll Sync
+							Ray Bogman AI Sync for Jekyll &amp; GitHub Pages
 							<span style="background:#00a32a;color:#fff;font-size:11px;padding:2px 8px;border-radius:3px;vertical-align:middle;margin-left:8px;">ACTIVE</span>
 						</h2>
 						<p style="font-size:14px;line-height:1.6;">
@@ -1108,7 +1111,7 @@ class WPJS_Admin {
 					Ray Bogman Ecosystem
 				</h2>
 				<p style="font-size:14px;line-height:1.6;">
-					The Ray Bogman plugin suite is designed to work together. Use <strong>Content Orchestrator</strong> to generate AI-powered blog posts, then use <strong>Jekyll Sync</strong> to publish them to your static Jekyll site — a complete content-to-deployment pipeline.
+					The Ray Bogman plugin suite is designed to work together. Use <strong>Content Orchestrator</strong> to generate AI-powered blog posts, then use <strong>AI Sync for Jekyll &amp; GitHub Pages</strong> to publish them to your static site — a complete content-to-deployment pipeline.
 				</p>
 				<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;">
 					<div style="flex:1;min-width:250px;background:#f0f6fc;border:1px solid #c3c4c7;border-radius:4px;padding:16px;text-align:center;">
@@ -1122,7 +1125,7 @@ class WPJS_Admin {
 					<div style="flex:1;min-width:250px;background:#f0faf0;border:1px solid #c3c4c7;border-radius:4px;padding:16px;text-align:center;">
 						<span class="dashicons dashicons-share-alt" style="font-size:32px;width:32px;height:32px;color:#00a32a;"></span>
 						<h4 style="margin:8px 0 4px;">Publish</h4>
-						<p style="font-size:13px;color:#50575e;margin:0;">Jekyll Sync pushes<br>to GitHub Pages</p>
+						<p style="font-size:13px;color:#50575e;margin:0;">AI Sync pushes<br>to GitHub Pages</p>
 					</div>
 					<div style="flex:0 0 40px;display:flex;align-items:center;justify-content:center;">
 						<span class="dashicons dashicons-arrow-right-alt" style="font-size:24px;color:#2271b1;"></span>
@@ -1200,7 +1203,7 @@ class WPJS_Admin {
 		<div class="wrap">
 			<h1 class="wp-heading-inline">
 				<span class="dashicons dashicons-share-alt" style="font-size:28px;width:28px;height:28px;vertical-align:middle;margin-right:8px;"></span>
-				Ray Bogman Jekyll Sync — Articles
+				Ray Bogman AI Sync for Jekyll &amp; GitHub Pages — Articles
 			</h1>
 			<hr class="wp-header-end" />
 
@@ -1313,9 +1316,11 @@ class WPJS_Admin {
 		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wpjs_bulk_nonce'] ) ), 'wpjs_bulk_action' ) ) { return; }
 		if ( ! current_user_can( 'manage_options' ) ) { return; }
 
-		// Allow long-running bulk operations.
-		if ( function_exists( 'set_time_limit' ) ) {
-			set_time_limit( 300 );
+		// Allow long-running bulk operations. Scoped to this handler only —
+		// already gated by nonce + capability checks above; safe-mode hosts skipped.
+		if ( function_exists( 'set_time_limit' ) && false === strpos( ini_get( 'disable_functions' ), 'set_time_limit' ) ) {
+			// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- Scoped to authenticated bulk handler.
+			@set_time_limit( 300 );
 		}
 
 		// WP_List_Table sends bulk action as 'action' (top dropdown) or 'action2' (bottom dropdown).
@@ -1532,7 +1537,7 @@ class WPJS_Admin {
 		<div class="wrap">
 			<h1>
 				<span class="dashicons dashicons-share-alt" style="font-size:28px;width:28px;height:28px;vertical-align:middle;margin-right:8px;"></span>
-				Ray Bogman Jekyll Sync — Dashboard
+				Ray Bogman AI Sync for Jekyll &amp; GitHub Pages — Dashboard
 			</h1>
 
 			<div style="display:flex;gap:16px;flex-wrap:wrap;margin:16px 0;">
