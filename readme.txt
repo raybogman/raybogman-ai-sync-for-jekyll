@@ -5,7 +5,7 @@ Tags: jekyll, markdown, static site, sync, deployment
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 7.2.0
+Stable tag: 7.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -213,6 +213,9 @@ This plugin connects to external third-party services depending on your configur
 
 == Upgrade Notice ==
 
+= 7.3.0 =
+Plugin slug renamed to `raybogman-ai-sync-for-jekyll` to match the display name and fully comply with WordPress.org trademark rules (the "for X" slug pattern). Installs into a new folder — after upgrading, deactivate and delete the old `raybogman-jekyll-sync` folder. All settings, OAuth tokens, and approved post markers are preserved (option names unchanged).
+
 = 7.2.0 =
 Renamed to "Ray Bogman AI Sync for Jekyll & GitHub Pages" to clarify non-affiliation with Jekyll/GitHub per WordPress.org plugin guidelines. Output escaping hardened. Tags cleaned of brand-only terms. No functional changes.
 
@@ -220,6 +223,13 @@ Renamed to "Ray Bogman AI Sync for Jekyll & GitHub Pages" to clarify non-affilia
 WP.org compliance release. External services documented. Inline scripts replaced with wp_add_inline_script. file_get_contents replaced with WP_Filesystem.
 
 == Changelog ==
+
+= 7.3.0 =
+* **Slug renamed** from `raybogman-jekyll-sync` to `raybogman-ai-sync-for-jekyll` — matches the display name and follows the WordPress.org "for X" slug pattern, eliminating any trademark-affiliation risk in the technical identifier.
+* Plugin main file renamed to `raybogman-ai-sync-for-jekyll.php`. Text Domain updated to match.
+* **Backward compatible**: internal `WPJS_*` constants, class prefixes, option names, nonce names, and AJAX action names are unchanged. All stored data (settings, OAuth tokens, approved markers, sync log, style profile) carries over without migration.
+* **Manual cleanup for existing installs**: WordPress treats the new folder as a separate plugin. After updating, deactivate and delete the old `raybogman-jekyll-sync` folder via Plugins → Installed Plugins.
+* No functional or visual changes — the display name "Ray Bogman AI Sync for Jekyll & GitHub Pages" was already shipped in 7.2.0.
 
 = 7.2.0 =
 * **Renamed** to "Ray Bogman AI Sync for Jekyll & GitHub Pages" — clarifies non-affiliation with the Jekyll and GitHub projects per WordPress.org naming guidelines (`for Jekyll` pattern).
