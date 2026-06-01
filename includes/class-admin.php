@@ -41,7 +41,7 @@ class WPJS_Admin {
 	private $dashboard_hook = '';
 
 	public function menu() {
-		$this->dashboard_hook = add_menu_page( 'Ray Bogman AI Sync for Jekyll & GitHub Pages', 'Jekyll Sync', 'manage_options', 'wpjs-dashboard', array( $this, 'render_dashboard' ), 'dashicons-share-alt', 30 );
+		$this->dashboard_hook = add_menu_page( 'AI WordPress Sync for Jekyll & GitHub Pages', 'Jekyll Sync', 'manage_options', 'wpjs-dashboard', array( $this, 'render_dashboard' ), 'dashicons-share-alt', 30 );
 		add_submenu_page( 'wpjs-dashboard', 'Dashboard', 'Dashboard', 'manage_options', 'wpjs-dashboard', array( $this, 'render_dashboard' ) );
 		$this->articles_hook = add_submenu_page( 'wpjs-dashboard', 'Articles', 'Articles', 'manage_options', 'wpjs-articles', array( $this, 'render_articles' ) );
 		$this->settings_hook = add_submenu_page( 'wpjs-dashboard', 'Settings', 'Settings', 'manage_options', 'wpjs-settings', array( $this, 'render_settings' ) );
@@ -226,7 +226,7 @@ class WPJS_Admin {
 		<div class="wrap">
 			<h1>
 				<span class="dashicons dashicons-share-alt" style="font-size:28px;width:28px;height:28px;vertical-align:middle;margin-right:8px;"></span>
-				Ray Bogman AI Sync for Jekyll &amp; GitHub Pages — Settings
+				AI WordPress Sync for Jekyll &amp; GitHub Pages — Settings
 			</h1>
 
 			<nav class="nav-tab-wrapper" style="margin-bottom:16px;">
@@ -880,10 +880,10 @@ class WPJS_Admin {
 			<div class="card" style="padding:16px 20px;">
 				<h2 style="margin-top:0;">
 					<span class="dashicons dashicons-share-alt" style="font-size:24px;width:24px;height:24px;color:#2271b1;margin-right:8px;vertical-align:middle;"></span>
-					About Ray Bogman AI Sync for Jekyll &amp; GitHub Pages
+					About AI WordPress Sync for Jekyll &amp; GitHub Pages
 				</h2>
 				<p style="font-size:14px;line-height:1.6;">
-					<strong>Ray Bogman AI Sync for Jekyll &amp; GitHub Pages</strong> bridges the gap between WordPress content management and Jekyll static site generation. Write and manage your content in WordPress, then publish directly to your Jekyll GitHub Pages site with a single click. An optional AI panel (Claude or OpenAI) generates SEO descriptions and image alt text on demand — no required cloud dependency.
+					<strong>AI WordPress Sync for Jekyll &amp; GitHub Pages</strong> bridges the gap between WordPress content management and Jekyll static site generation. Write and manage your content in WordPress, then publish directly to your Jekyll GitHub Pages site with a single click. An optional AI panel (Claude or OpenAI) generates SEO descriptions and image alt text on demand — no required cloud dependency.
 				</p>
 				<p style="font-size:13px;line-height:1.6;color:#646970;font-style:italic;">
 					Jekyll and GitHub are projects/trademarks of their respective owners. This plugin is an independent integration and is not affiliated with or endorsed by either.
@@ -982,7 +982,7 @@ class WPJS_Admin {
 
 			<div class="card" style="padding:16px 20px;text-align:center;">
 				<p style="color:#50575e;font-size:13px;margin:0;">
-					Ray Bogman AI Sync for Jekyll &amp; GitHub Pages v<?php echo esc_html( WPJS_VERSION ); ?> · &copy; <?php echo esc_html( gmdate( 'Y' ) ); ?>
+					AI WordPress Sync for Jekyll &amp; GitHub Pages v<?php echo esc_html( WPJS_VERSION ); ?> · &copy; <?php echo esc_html( gmdate( 'Y' ) ); ?>
 					<a href="https://raybogman.com" target="_blank" rel="noopener" style="color:#50575e;">Ray Bogman</a>
 				</p>
 			</div>
@@ -1012,7 +1012,7 @@ class WPJS_Admin {
 					<div style="flex:1;min-width:400px;">
 						<h2 style="margin-top:0;">
 							<span class="dashicons dashicons-edit-large" style="font-size:24px;width:24px;height:24px;color:#2271b1;margin-right:8px;vertical-align:middle;"></span>
-							RayAI – Content Orchestrator
+							Ray Bogman AI Content Orchestrator
 						</h2>
 						<p style="font-size:14px;line-height:1.6;">
 							The complete AI-powered content pipeline for WordPress. From website scanning through SEO optimization, content generation, featured images, internal linking, LinkedIn sharing, and multi-platform repurposing — all in one plugin.
@@ -1085,7 +1085,7 @@ class WPJS_Admin {
 					<div style="flex:1;min-width:400px;">
 						<h2 style="margin-top:0;">
 							<span class="dashicons dashicons-share-alt" style="font-size:24px;width:24px;height:24px;color:#00a32a;margin-right:8px;vertical-align:middle;"></span>
-							Ray Bogman AI Sync for Jekyll &amp; GitHub Pages
+							AI WordPress Sync for Jekyll &amp; GitHub Pages
 							<span style="background:#00a32a;color:#fff;font-size:11px;padding:2px 8px;border-radius:3px;vertical-align:middle;margin-left:8px;">ACTIVE</span>
 						</h2>
 						<p style="font-size:14px;line-height:1.6;">
@@ -1203,7 +1203,7 @@ class WPJS_Admin {
 		<div class="wrap">
 			<h1 class="wp-heading-inline">
 				<span class="dashicons dashicons-share-alt" style="font-size:28px;width:28px;height:28px;vertical-align:middle;margin-right:8px;"></span>
-				Ray Bogman AI Sync for Jekyll &amp; GitHub Pages — Articles
+				AI WordPress Sync for Jekyll &amp; GitHub Pages — Articles
 			</h1>
 			<hr class="wp-header-end" />
 
@@ -1537,7 +1537,7 @@ class WPJS_Admin {
 		<div class="wrap">
 			<h1>
 				<span class="dashicons dashicons-share-alt" style="font-size:28px;width:28px;height:28px;vertical-align:middle;margin-right:8px;"></span>
-				Ray Bogman AI Sync for Jekyll &amp; GitHub Pages — Dashboard
+				AI WordPress Sync for Jekyll &amp; GitHub Pages — Dashboard
 			</h1>
 
 			<div style="display:flex;gap:16px;flex-wrap:wrap;margin:16px 0;">

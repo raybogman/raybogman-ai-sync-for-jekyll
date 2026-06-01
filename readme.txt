@@ -1,11 +1,11 @@
-=== Ray Bogman AI Sync for Jekyll & GitHub Pages ===
+=== AI WordPress Sync for Jekyll & GitHub Pages ===
 Contributors: raybogman
 Donate link: https://raybogman.com
 Tags: jekyll, markdown, static site, sync, deployment
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,7 +13,7 @@ Publish WordPress posts to Jekyll on GitHub Pages as Markdown with YAML front ma
 
 == Description ==
 
-Ray Bogman AI Sync for Jekyll & GitHub Pages lets you edit content in WordPress and publish it to a Jekyll site hosted on GitHub Pages. Jekyll and GitHub are projects/trademarks of their respective owners; this plugin is an independent integration and is not affiliated with or endorsed by either.
+AI WordPress Sync for Jekyll & GitHub Pages lets you edit content in WordPress and publish it to a Jekyll site hosted on GitHub Pages. Jekyll and GitHub are projects/trademarks of their respective owners; this plugin is an independent integration and is not affiliated with or endorsed by either.
 
 Features:
 
@@ -223,6 +223,11 @@ This plugin connects to external third-party services depending on your configur
 8. **Pull from Jekyll** — import Jekyll posts back into WordPress.
 
 == Changelog ==
+
+= 1.0.1 =
+* Display name updated to **AI WordPress Sync for Jekyll & GitHub Pages** across all in-admin UI strings (menu page title, Settings header, About tab, footer, Articles header, Dashboard header).
+* Fixed stale cross-promo card in the **More by Ray Bogman** tab: `RayAI – Content Orchestrator` → `Ray Bogman AI Content Orchestrator` (matches the canonical name in the Content Orchestrator plugin folder).
+* No functional changes.
 
 = 1.0.0 =
 * Initial public release.
