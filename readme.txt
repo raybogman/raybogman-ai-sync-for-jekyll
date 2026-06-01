@@ -5,7 +5,7 @@ Tags: jekyll, markdown, static site, sync, deployment
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 7.3.0
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,17 +20,28 @@ Features:
 * **One-click "Login with GitHub"** — OAuth login, no manual token pasting
 * **Live repository picker** — all your repos load instantly after login via AJAX
 * **Live branch picker** — select a repo and branches load automatically, no page refresh
-* Connected state shows your GitHub avatar, username, and a Disconnect button
-* Top-level **Jekyll Sync** admin menu with Articles and Settings subpages
-* Articles page with Approved toggle per item, type filter, search, per-row "Push now"
-* Bulk **Publish approved to Jekyll** button
+* Top-level **Jekyll Sync** admin menu with Dashboard, Articles, and Settings subpages
+* Articles list with Approved toggle per item, type filter, search, per-row push/preview/AI/diff/delete/verify
+* Bulk **Publish approved to Jekyll** button + bulk actions for approve, push, delete
 * Converts post HTML to Markdown with Jekyll YAML front matter
-* Commits directly to GitHub via the Contents API
+* **Style-aware conversion** — reads your existing Jekyll site's `_config.yml` and sample posts to match its front matter schema, permalink pattern, and Markdown conventions
+* **Featured & inline image sync** — uploads images to your Jekyll repo and rewrites URLs to Jekyll-native paths
+* **Internal link rewriting** — WordPress domain links automatically rewritten to your Jekyll site URL
+* **AI SEO descriptions** (optional) — Claude or OpenAI generates 1-2 sentence descriptions on demand
+* **AI image alt text** (optional) — Claude or OpenAI vision describes images missing alt text
+* **Two-way sync** — pull Jekyll posts back into WordPress as drafts
+* **Scheduled auto-sync** — WP-Cron based intervals (1/6/12/24 hours)
+* **Auto-push on publish** — push automatically when WordPress posts are published or updated
+* **Sync verification** — compare stored push hash against the live Jekyll file
+* **Diff view** — preview color-coded additions/deletions before re-pushing
+* **Sync history log** — every push, pull, and delete recorded with user, post, path, and result
+* **GitHub Actions trigger** — optionally dispatch a build workflow after each push
+* **SEO plugin support** — auto-detects Yoast SEO and RankMath meta descriptions and focus keywords
 * Per-post sidebar meta box
 
 == Installation ==
 
-1. Upload the `wp-jekyll-sync` folder to `/wp-content/plugins/` (or upload the zip via Plugins → Add New → Upload).
+1. Upload the `raybogman-ai-sync-for-jekyll` folder to `/wp-content/plugins/` (or upload the zip via Plugins → Add New → Upload).
 2. Activate the plugin.
 3. Go to **Jekyll Sync → Settings**:
    * Create a GitHub OAuth App at [github.com/settings/developers](https://github.com/settings/developers).
@@ -99,9 +110,9 @@ The style detection reads: url (site base URL), baseurl, permalink pattern, mark
 
 In Style-aware mode, the permalink front matter field is generated using the pattern from your _config.yml. Variables like :year, :month, :day, :title, :slug, and :categories are substituted with the post's actual data.
 
-= Why did my settings disappear? =
+= Does saving one settings tab overwrite another? =
 
-In earlier versions, saving from one settings tab could overwrite settings from another tab. This was fixed in v2.5.0 — settings now only update fields present in the submitted form. If you experience this, re-enter your settings and save from the correct tab.
+No. Each tab's save only updates the fields actually present in its form, so settings on other tabs are preserved.
 
 = What content types are supported? =
 
@@ -211,357 +222,18 @@ This plugin connects to external third-party services depending on your configur
 7. **Diff View** — compare current WordPress content with what is live on Jekyll.
 8. **Pull from Jekyll** — import Jekyll posts back into WordPress.
 
-== Upgrade Notice ==
-
-= 7.3.0 =
-Plugin slug renamed to `raybogman-ai-sync-for-jekyll` to match the display name and fully comply with WordPress.org trademark rules (the "for X" slug pattern). Installs into a new folder — after upgrading, deactivate and delete the old `raybogman-jekyll-sync` folder. All settings, OAuth tokens, and approved post markers are preserved (option names unchanged).
-
-= 7.2.0 =
-Renamed to "Ray Bogman AI Sync for Jekyll & GitHub Pages" to clarify non-affiliation with Jekyll/GitHub per WordPress.org plugin guidelines. Output escaping hardened. Tags cleaned of brand-only terms. No functional changes.
-
-= 7.0.0 =
-WP.org compliance release. External services documented. Inline scripts replaced with wp_add_inline_script. file_get_contents replaced with WP_Filesystem.
-
 == Changelog ==
 
-= 7.3.0 =
-* **Slug renamed** from `raybogman-jekyll-sync` to `raybogman-ai-sync-for-jekyll` — matches the display name and follows the WordPress.org "for X" slug pattern, eliminating any trademark-affiliation risk in the technical identifier.
-* Plugin main file renamed to `raybogman-ai-sync-for-jekyll.php`. Text Domain updated to match.
-* **Backward compatible**: internal `WPJS_*` constants, class prefixes, option names, nonce names, and AJAX action names are unchanged. All stored data (settings, OAuth tokens, approved markers, sync log, style profile) carries over without migration.
-* **Manual cleanup for existing installs**: WordPress treats the new folder as a separate plugin. After updating, deactivate and delete the old `raybogman-jekyll-sync` folder via Plugins → Installed Plugins.
-* No functional or visual changes — the display name "Ray Bogman AI Sync for Jekyll & GitHub Pages" was already shipped in 7.2.0.
-
-= 7.2.0 =
-* **Renamed** to "Ray Bogman AI Sync for Jekyll & GitHub Pages" — clarifies non-affiliation with the Jekyll and GitHub projects per WordPress.org naming guidelines (`for Jekyll` pattern).
-* Hardened output escaping on the Style profile container (`esc_attr` on inline `style` attribute) — silences Plugin Check warning.
-* Replaced brand-only readme tags (`github`, `github-pages`) with neutral keywords (`jekyll`, `static site`, `deployment`).
-* Bumped "Tested up to" to **7.0** and tightened the short description to ≤150 chars (Plugin Check requirements).
-* Escaped `strlen()` output in the Articles table description counter (`esc_html`/`(int)` cast) — silences Plugin Check `OutputNotEscaped` error.
-* Scoped `set_time_limit(300)` more defensively: skipped when host blocks via `disable_functions`, suppressed via `@`, and explicitly justified with a phpcs annotation. Still gated by nonce + capability.
-* Updated About and FAQ tabs to reflect the new product name and clarify the optional AI capabilities.
-* No functional or breaking changes — slug, text domain, options, and stored data are unchanged. Existing installs auto-update without configuration loss.
-
-= 7.0.0 =
-* **WP.org compliance release** — ready for plugin directory submission.
-* Replaced inline `<script>` with `wp_add_inline_script()`.
-* Replaced `file_get_contents()` with `WP_Filesystem` API (3 locations).
-* Added complete **External Services** section documenting GitHub, Claude, and OpenAI API usage with terms/privacy links.
-
-= 6.7.0 =
-* Added All | Posts | Pages filter tabs.
-
-= 6.6.0 =
-* **Fixed false "Out of sync" on verify** — now compares stored push hash vs Jekyll file hash instead of regenerating markdown (which differs due to image paths).
-* Stores MD5 hash of pushed content on every push (`_wpjs_push_hash` meta).
-* Verify now shows accurate states: "Verified — Jekyll matches last push", "WP modified after push", "Jekyll file was modified externally", "Not on Jekyll".
-
-= 6.5.0 =
-* **Realtime sync verification** — "Verify" link per post checks WP content against the actual Jekyll file on GitHub.
-* Shows: "In sync" (green), "Out of sync — X lines differ" (yellow), "Not on Jekyll" (red).
-* **Verify all synced** button at the top — checks all posts sequentially.
-* Compares MD5 hashes of generated markdown vs GitHub file content.
-
-= 6.3.0 =
-* **Fixed AI alt text not appearing after re-push** — converter now reads latest alt text from WP attachment meta (`_wp_attachment_image_alt`) instead of the stale HTML `alt` attribute.
-* Looks up attachment by `wp-image-{ID}` CSS class or URL-to-attachment-ID fallback.
-
-= 6.1.0 =
-* AI panel now always shows existing description/alt text for editing — works with or without AI API key.
-* Description uses textarea instead of single-line input.
-* "Generate" button (AI) and "Save" button shown separately — generate first, edit, then save.
-* Character counter turns red when over 160.
-* Fixed HTML entity encoding in description display.
-* AI link always visible (not gated behind API key) — manual editing always available.
-
-= 6.0.1 =
-* Fixed JS not loading on Articles page — enqueue now uses both hook comparison AND page query param as fallback.
-* Fixed AI link not showing — `is_available()` now checks both Claude and OpenAI keys regardless of selected provider.
-
-= 6.0.0 =
-* **AI panel redesigned** — clicking AI opens a persistent inline panel below the row (never auto-hides).
-* Description field: editable text input with character counter (160 max), Regenerate (↻) and Save buttons.
-* Image alt text: each image shown with filename, featured badge, editable input, Regenerate and Save buttons.
-* Source labels: (AI generated), (from SEO plugin), (from excerpt), (existing).
-* Close button to dismiss the panel.
-* New AJAX endpoints: regen_description, save_description, regen_alt, save_alt.
-
-= 5.9.0 =
-* Actions column restored as always-visible text links between Title and Status.
-* Layout: Title (40%) | Actions (auto) | Status (100px) | Synced (90px).
-* Actions show as: Push | Preview | AI | Diff | Delete — always visible, no hover needed.
-
-= 5.8.0 =
-* Actions moved to row actions under the title (standard WP pattern — Edit | Push | Preview | AI | Diff | Delete).
-* Removed separate Actions column — 3 columns only: Title, Status, Synced.
-* Row actions appear on hover, fitting any screen width.
-
-= 5.7.0 =
-* Reduced to 4 columns: Title, Status, Synced, Actions — fits any screen.
-* Status column now combines sync status + approve toggle (✓ Ready / ○ Queued).
-* Removed separate Approved column.
-* Actions column widened to 200px for icon buttons.
-* AI feedback shown as inline row notice instead of off-screen tooltip.
-
-= 5.6.0 =
-* **Redesigned Articles table** — compact icon-based actions, fewer columns, better UX.
-* Merged Author, Type, Date into Title column subtitle (type · author · date).
-* Actions as icon buttons with tooltips: Push, Preview, AI, Diff, Delete.
-* Approved column as single icon toggle (checkmark / circle).
-* Last pushed shows relative time ("3 hours ago") with full date on hover.
-* Jekyll Status with colored dots (green=synced, yellow=outdated, red=not synced).
-
-= 5.5.0 =
-* **AI button per article** — generate AI description + image alt text before pushing, then preview the result.
-* **Bulk action "Generate AI Metadata"** — run AI on multiple selected posts at once.
-* AI generation now independent from push — run AI first, preview, then push when satisfied.
-* Tooltip shows AI summary after generation (description text, number of alt texts generated).
-
-= 5.4.0 =
-* AI settings redesigned — separate sections for Claude (Anthropic) and OpenAI (GPT), matching Content Orchestrator layout.
-* Separate API key, model dropdown, and Validate button per provider.
-* Claude models: Sonnet 4.6 (recommended), Opus 4.6, Haiku 4.5.
-* OpenAI models: GPT-4o (recommended), GPT-4o Mini, GPT-4 Turbo, GPT-4.1, GPT-4.1 Mini, GPT-4.1 Nano.
-* Provider selector chooses which AI is used for description/alt text generation.
-
-= 5.3.0 =
-* Display name changed to "Ray Bogman Jekyll Sync" everywhere (no dashes, no RayBogman compound).
-
-= 5.2.0 =
-* AI features now fully independent — no dependency on RayAI Content Orchestrator.
-* Own API key, provider (Claude/OpenAI), and model fields on Connection tab.
-* Validate button for API key testing.
-* AI Model field added (customizable, defaults to claude-sonnet-4-6 / gpt-4o).
-
-= 5.1.0 =
-* Renamed plugin from "RayAI – Jekyll Sync" to "Ray Bogman Jekyll Sync" with slug `raybogman-jekyll-sync`.
-* Updated all display strings, page titles, and metadata to reflect the new brand name.
-* Kept internal class names, option keys, and constants unchanged.
-
-= 5.0.0 =
-* **AI Description Generator** — auto-generates SEO meta descriptions for posts missing excerpts and Yoast/RankMath descriptions. AI summarizes the post in 1-2 sentences (max 160 chars), saved as WP excerpt + Jekyll front matter.
-* **AI Image Alt Text** — auto-generates alt text for images missing it using AI vision (Claude/OpenAI). Works for featured images and inline body images. Alt text saved back to WP attachment meta.
-* **Shared API keys** — automatically detects and uses Claude/OpenAI API keys from RayAI Content Orchestrator if installed. Own API key field shown as fallback.
-* New AI Features card on Connection tab with toggles, provider auto-detection, API key validation.
-* New `class-ai-client.php` with Claude Messages API and OpenAI Chat Completions API including vision support.
-
-= 4.6.0 =
-* Fixed inline images disappearing — images are now processed BEFORE inline formatting (bold/italic) to prevent `<strong>` wrapping from consuming the `<img>` tag.
-* Shared `convert_img_tag()` method used by both standard and styled converters.
-* `finalize_markdown()` helper preserves HTML `<img>` tags through the final `wp_strip_all_tags()` using placeholders.
-* Removed duplicate pre/link/img handlers in styled converter.
-
-= 4.5.0 =
-* **Image alignment preserved** — WP classes `alignright`, `alignleft`, `aligncenter` converted to inline CSS styles in HTML `<img>` tags instead of plain Markdown `![]()`
-* Width and height attributes preserved from original HTML.
-* Both standard and style-aware converters updated.
-
-= 4.4.0 =
-* Fixed inline image sync — now catches `/wp-content/uploads/` URLs regardless of domain (WP or already-rewritten Jekyll domain).
-* Converts rewritten Jekyll URLs back to WP URLs for media library lookup.
-* Handles WordPress image size suffixes (e.g. `image-300x300.png` → finds `image.png` in media library).
-* Falls back to HTTP download if local file not found.
-
-= 4.3.0 =
-* **Inline body images now synced to Jekyll** — all images inside post content are uploaded to `assets/images/` and their URLs rewritten to Jekyll-native paths.
-* Supports images from WP media library (read from disk) and remote WP URLs (downloaded).
-* Handles jpg, jpeg, png, gif, webp, svg formats.
-* Each inline image committed individually with descriptive commit message.
-
-= 4.2.0 =
-* Fixed Pull tab JS not loading — articles.js now enqueued on Settings page too.
-* Added "Import All New" button to pull all new Jekyll posts at once.
-* Green summary banner after pulling: "Imported/updated X post(s) from Jekyll" with links to View Draft Posts and View Articles.
-
-= 4.1.0 =
-* **Scheduled Auto-Sync** — WP-Cron based, configurable interval (1/6/12/24 hours). Modes: approved & outdated only, or all published. Shows next run time on Connection tab.
-* **Two-way Sync (Pull from Jekyll)** — new "Pull from Jekyll" tab lists all posts in the Jekyll repo, shows which exist in WP, Import/Update buttons. Markdown converted back to HTML with front matter parsed.
-* Cron rescheduled automatically when settings are saved.
-
-= 4.0.0 =
-* **Dashboard** — stats overview: Total Posts/Pages, Published, Outdated, Not Published, Approved with color-coded cards.
-* **Sync History Log** — tracks every push/delete with timestamp, user, post, path, result. New "Log" tab in Settings. Max 500 entries with Clear Log button.
-* **Diff View** — compare current WP content with what's on Jekyll before pushing. Color-coded additions (green) and deletions (red).
-* **SEO Metadata Mapping** — auto-detects Yoast SEO and RankMath. Maps meta title, description, and focus keywords to Jekyll front matter.
-* **GitHub Actions Trigger** — optionally trigger a Jekyll build workflow after each push. Configure workflow filename on Connection tab.
-* **Auto-push on Publish** — hook into WordPress publish action to auto-push posts/pages when published or updated.
-* Dashboard is now the main landing page under the Jekyll Sync menu.
-* Delete actions refactored to use Publisher::delete() with logging.
-
-= 3.3.0 =
-* Added **More by Ray Bogman** tab showcasing the Ray Bogman plugin ecosystem.
-* Content Orchestrator product card with features, pricing table, and install detection.
-* Jekyll Sync card with ACTIVE badge.
-* Ray Bogman Ecosystem visual pipeline: Create → Publish → Live.
-
-= 3.2.0 =
-* Fixed duplicate FAQ tab in navigation.
-* Branded page title: "Ray Bogman Jekyll Sync — Settings" with dashicon on all pages.
-* Renamed "Content Style" tab to "Formatting".
-* FAQ and About tabs now use full page width.
-
-= 3.1.0 =
-* Added **FAQ tab** with 18 questions covering setup, features, troubleshooting, and limits.
-* Added **About tab** with plugin overview, feature table, author bio, certifications, and social links.
-* FAQ and About tabs visible even when not connected to GitHub.
-
-= 3.0.0 =
-* Renamed plugin to "Ray Bogman Jekyll Sync" with slug `raybogman-jekyll-sync` for WP.org trademark compliance.
-* Fixed all Plugin Check warnings with proper phpcs:ignore annotations.
-* Major version bump for the rename.
-
-= 2.5.0 =
-* **Fixed URL rewriting root cause** — Settings update method was overwriting `jekyll_base_url`, `sync_posts`, `sync_pages`, and `conversion_mode` when saving from a different tab. Now only updates fields actually present in the submitted form.
-* Prevents cross-tab setting corruption (saving Connection tab no longer resets Content tab checkboxes to off).
-
-= 2.4.0 =
-* Replaced all `strip_tags()` calls with `wp_strip_all_tags()` or `wp_kses()` for Plugin Check compliance.
-* Replaced `wp_redirect()` with `wp_safe_redirect()` in OAuth handler.
-* Added `wp_unslash()` and proper sanitization to all superglobal access (`$_GET`, `$_POST`).
-* Updated "Tested up to" to 6.9.
-* Reduced plugin tags to maximum of 5.
-* Renamed display name from "WP Jekyll Sync" to "Jekyll Sync" for trademark compliance.
-
-= 2.3.0 =
-* URL rewriting reads settings directly from wp_options (bypasses any caching/getter issues).
-* Checks all WP URL sources: site_url(), home_url(), and raw siteurl/home options from database.
-* Content tab shows all WP URLs being rewritten and the target Jekyll URL.
-
-= 2.2.0 =
-* **Fixed bulk actions** — row actions changed from nested forms to GET links, eliminating the HTML form conflict that broke bulk approve/push/delete.
-* **Fixed URL rewriting** — manual setting now takes priority over auto-detected, tries both `site_url()` and `home_url()` as WP sources, clear green/yellow status indicator on Content tab.
-* Row action handlers updated from POST to GET (toggle_approve, publish_one, delete_one).
-* Content tab shows success/warning notice for URL rewriting status.
-
-= 2.1.0 =
-* **Featured images now uploaded to Jekyll repo** — image file pushed to `assets/images/` (or auto-detected path) with Jekyll-native paths in front matter.
-* Images path auto-detected from existing posts' `featured_image` values during style detection.
-* Fallback: checks if `assets/images` directory exists in the repo.
-* `featured_image` front matter now uses relative Jekyll paths (e.g. `/assets/images/my-post.jpg`) instead of WP URLs.
-* Images path shown in Detected Profile on Content Style tab.
-
-= 2.0.3 =
-* Fixed bulk actions not working — hidden `action` field was conflicting with WP_List_Table's bulk action dropdown. Now uses `admin_init` with a separate nonce field.
-
-= 2.0.2 =
-* Fixed URL rewriting to cover the ENTIRE output — front matter (featured_image, image URLs) AND body links are now all rewritten in one pass.
-
-= 2.0.1 =
-* Fixed column widths — Title, Author, Type, Date, Status, Approved, Last pushed, Actions all sized proportionally to eliminate excess spacing.
-
-= 2.0.0 =
-* Fixed URL rewriting — now correctly replaces all WordPress domain links with the Jekyll base URL.
-* Content tab shows active rewrite rule with source and target URLs.
-* Re-push, Preview, Delete buttons aligned on one line (nowrap).
-* `get_jekyll_base_url()` made public for display on settings page.
-
-= 1.9.0 =
-* Fixed URL detection — now correctly reads the `url` field from _config.yml.
-* Parser only reads top-level YAML keys (skips indented/nested lines to avoid false matches).
-* Empty `baseurl: ""` handled properly (no longer treated as a value).
-* Extracts posts permalink from `collections.posts.permalink` (e.g. `/blog/:slug/`).
-* Jekyll Base URL field auto-filled with detected URL when present.
-* Permalink builder now supports `:slug` variable.
-
-= 1.8.0 =
-* **Internal link rewriting** — WP base URL replaced with Jekyll base URL in all Markdown links and images.
-* Jekyll base URL auto-detected from `_config.yml` (`url` + `baseurl` fields) during style detection.
-* Manual fallback: Jekyll Base URL field on the Content tab.
-* Style detector now extracts `url` and `baseurl` from `_config.yml`.
-* Image icon now inline with title on a single line.
-
-= 1.7.0 =
-* Push and Preview buttons now side-by-side on the same row (flexbox layout).
-* Green image icon next to title when the post/page has a featured image.
-* Delete button aligned inline with Push/Preview when visible.
-
-= 1.6.0 =
-* **Stale indicator** — yellow "Outdated" status when a WP post was modified after the last push.
-* **Bulk checkboxes** — select multiple posts and use Bulk Actions: Approve, Unapprove, Push to Jekyll, Delete from Jekyll.
-* **Auto-push on approve** — checkbox toggle to automatically push when clicking Approve.
-* **Preview button** — see the generated Markdown in a modal before pushing.
-* Per-row actions now show Preview button for published posts.
-
-= 1.5.0 =
-* Fixed missing content on Jekyll site — WP excerpt now maps to `description` front matter field.
-* Added `featured_image` front matter from WP featured image (post thumbnail).
-* Style-aware mode data map now includes `description`, `featured_image`, and `image` aliases for theme compatibility.
-* Standard mode also outputs `description` and `featured_image` when available.
-
-= 1.4.0 =
-* Fixed Approved toggle not working — nonces now use per-post unique tokens.
-* Added **Delete** button per article — removes the file from the Jekyll repo and resets the publish status.
-* Push button shows "Re-push" for already-published articles.
-* Delete button only visible for published-to-Jekyll articles, with confirmation dialog.
-* Push and delete nonces also per-post for reliability.
-
-= 1.3.0 =
-* Added **Author** and **Date** columns to the Articles list.
-* **Jekyll Status** column replaces generic Status — shows green "Published" if pushed to Jekyll, red "Not published" if not.
-* Approved buttons now use colored dots (green = approved, grey = not approved).
-
-= 1.2.0 =
-* Added **Content Style** as its own tab (3 tabs: Connection, Content, Content Style).
-* Style tab has: Conversion Mode card, Detect Style card, and Detected Profile card.
-* Cleaner separation of settings by concern.
-
-= 1.1.0 =
-* Settings page restructured into **Connection** and **Content** tabs.
-* Content Style section moved to the Content tab with its own save button ("Save Style Settings").
-* Content Mapping + Author settings now on the Content tab.
-* Tab state preserved after saving.
-
 = 1.0.0 =
-* **Style-aware conversion mode** — reads your Jekyll site to detect front matter schema, Markdown conventions, and permalink patterns.
-* One-click "Detect Style from Jekyll Site" button reads `_config.yml` + samples up to 5 posts.
-* Detected profile shows front matter fields (name, type, required), array style (block/inline), permalink pattern, and Markdown conventions (headings, lists, emphasis, code fences, HR).
-* Profile stored and applied automatically on every sync when style-aware mode is active.
-* Standard conversion mode remains unchanged as the default.
-* GitHub client can now read file contents and list directories from the repo.
-
-= 0.9.0 =
-* Content Mapping section with sync toggles: enable/disable syncing WP Posts and Pages independently.
-* Author field now a dropdown: "Use post/page author" (default) or pick a specific WP user.
-* Articles list respects sync toggles — disabled content types are hidden.
-* Clearer visual mapping: Posts -> _posts, Pages -> _pages with editable paths.
-
-= 0.8.0 =
-* Switched OAuth callback from admin_init to admin-post.php for reliable callback handling.
-* Added debug panel showing connection status at top of settings page.
-* Better error messages for all OAuth failure scenarios.
-
-= 0.7.0 =
-* Fixed JS not loading — enqueue hook now uses the correct page handle from add_submenu_page.
-* Fixed OAuth state transient being overwritten on every page render.
-* Moved "Login with GitHub" button outside the form to prevent click interference.
-* Added fallback URL field so users can manually copy the OAuth authorize URL.
-* Changed wp_safe_redirect to wp_redirect in OAuth callback for broader host compatibility.
-* Added GitHub error parameter handling in OAuth callback.
-
-= 0.6.0 =
-* Added "Validate Connection" button — checks repo access, permissions (push/pull/admin), and branch existence via AJAX.
-* Validation results shown inline with detailed status (user, repo, permissions, branch).
-
-= 0.5.0 =
-* AJAX-powered repository dropdown — repos load live on page open, no save needed.
-* AJAX-powered branch dropdown — branches load instantly when a repo is selected.
-* Streamlined settings page: single card when not connected, clean layout when connected.
-* Removed multi-step save dance — pick repo, pick branch, save once.
-
-= 0.4.0 =
-* GitHub OAuth login flow — "Login with GitHub" button replaces manual token entry.
-* Connected state displays GitHub avatar, username, and Disconnect button.
-* Settings page restructured into guided steps.
-* CSRF-protected OAuth state parameter.
-
-= 0.3.0 =
-* Repository dropdown from GitHub API (server-side).
-* Branch dropdown for selected repo.
-* Fallback to manual text input.
-
-= 0.2.0 =
-* Top-level Jekyll Sync admin menu.
-* Articles page (WP_List_Table) with Approved toggle, filters, search, Push action.
-* Publisher class refactor.
-
-= 0.1.0 =
-* Initial release.
+* Initial public release.
+* WordPress-to-Jekyll publishing on GitHub Pages with Markdown + YAML front matter.
+* Style-aware conversion that reads your Jekyll site and matches its conventions.
+* GitHub OAuth login, live repo/branch pickers.
+* Featured and inline image sync to the Jekyll repository.
+* Internal link rewriting from WordPress domain to Jekyll site URL.
+* Optional AI (Claude / OpenAI) for SEO descriptions and image alt text on demand.
+* Two-way sync — pull Jekyll posts back into WordPress as drafts.
+* Scheduled auto-sync (WP-Cron) and auto-push on publish.
+* Sync verification, diff view, and full sync history log.
+* GitHub Actions workflow trigger after each push.
+* Yoast SEO and RankMath meta detection.
