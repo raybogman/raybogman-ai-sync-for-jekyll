@@ -1,0 +1,24 @@
+# Files and directories that must NOT ship in the distributed plugin zip.
+# Used by `wp dist-archive` and mirrored in .github/workflows/deploy.yml.
+
+# Version control / project meta
+.git
+.github
+.wordpress-org
+.claude
+.gitignore
+.gitattributes
+.distignore
+.editorconfig
+.DS_Store
+__MACOSX
+*.zip
+node_modules
+.env
+
+# Development tooling (coding-standards / compliance)
+phpcs.xml.dist
+phpcs.xml
+composer.json
+composer.lock
+vendor

@@ -4,7 +4,49 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class WPJS_AI_Client {
 
 	public static function is_available() {
-		return (bool) ( WPJS_Settings::get( 'ai_claude_api_key', '' ) || WPJS_Settings::get( 'ai_openai_api_key', '' ) );
+		// Available when the site owner has configured a provider through the
+		// WordPress 7.0+ core AI Client, or when a plugin-level API key is set
+		// (the direct-integration fallback used on older WordPress versions).
+		return (bool) (
+			function_exists( 'wp_ai_client_prompt' )
+			|| WPJS_Settings::get( 'ai_claude_api_key', '' )
+			|| WPJS_Settings::get( 'ai_openai_api_key', '' )
+		);
+	}
+
+	/**
+	 * Try to satisfy a text-generation request through the WordPress 7.0+
+	 * core AI Client (the provider the site owner configured at the site
+	 * level). Returns the generated text on success, or null when the AI
+	 * Client is unavailable (WordPress < 7.0), no provider is configured, or
+	 * the call fails — in which case the caller falls back to this plugin's
+	 * own direct integration below.
+	 *
+	 * @param string $prompt     The prompt to send.
+	 * @param int    $max_tokens Maximum number of tokens to generate.
+	 * @return string|null Generated text, or null when unavailable.
+	 */
+	private static function try_wp_ai_client( $prompt, $max_tokens ) {
+		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
+			return null;
+		}
+
+		try {
+			// Dynamic dispatch keeps this compatible with WordPress < 7.0
+			// (where wp_ai_client_prompt() does not exist): the function symbol
+			// is only referenced when function_exists() returned true above.
+			$builder = call_user_func( 'wp_ai_client_prompt', (string) $prompt );
+			$text    = $builder->usingMaxTokens( (int) $max_tokens )->generateText();
+
+			if ( ! is_string( $text ) || '' === trim( $text ) ) {
+				return null;
+			}
+			return trim( $text );
+		} catch ( \Throwable $e ) {
+			// No provider configured, model unavailable, network issue, etc.
+			// Fall back to the plugin's own direct integration.
+			return null;
+		}
 	}
 
 	public static function get_provider() {
@@ -28,6 +70,14 @@ class WPJS_AI_Client {
 	}
 
 	public static function call( $prompt, $max_tokens = 500 ) {
+		// Prefer the WordPress 7.0+ core AI Client (site-level configured
+		// provider). Falls back to the plugin's own direct integration on
+		// older WordPress or when no core provider has been configured.
+		$via_core = self::try_wp_ai_client( $prompt, $max_tokens );
+		if ( null !== $via_core ) {
+			return $via_core;
+		}
+
 		$provider = self::get_provider();
 		if ( $provider === 'openai' ) {
 			return self::call_openai( $prompt, $max_tokens );

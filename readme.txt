@@ -5,7 +5,7 @@ Tags: jekyll, markdown, static site, sync, deployment
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -142,6 +142,10 @@ Compares current WP content against what's live on Jekyll. Shows color-coded add
 
 If enabled and an API key is configured (Claude or OpenAI), clicking AI on a post generates a 1-2 sentence SEO description (max 160 chars). You can edit, regenerate, or save. Saved as WP excerpt.
 
+= Does this use the WordPress 7.0 core AI Client? =
+
+Yes. On WordPress 7.0 or newer, if the site owner has configured an AI provider through the core AI Client (Settings > Connectors), SEO description generation is routed through that core AI Client first — no provider API key needs to be entered in this plugin, and the plugin never contacts the provider directly. On older WordPress, or when no core provider is configured, the plugin falls back to its own Claude/OpenAI integration using the API key you enter on the Connection tab.
+
 = How does AI image alt text work? =
 
 Uses AI vision (Claude or OpenAI) to describe images. Works for featured and inline images. Alt text saved to WP attachment meta and used in Jekyll output.
@@ -181,6 +185,8 @@ Yes. The plugin auto-detects meta description and focus keywords from Yoast SEO 
 == External Services ==
 
 This plugin connects to external third-party services depending on your configuration:
+
+**WordPress 7.0+ — preferred path:** When running on WordPress 7.0 or newer and the site owner has configured a provider through the core AI Client, AI SEO description generation is routed through that core AI Client first (`wp_ai_client_prompt()` → `generateText()`). In that case the plugin never contacts api.anthropic.com or api.openai.com directly — the request goes to whichever provider the site owner has set up at the site level, with credentials managed by WordPress core. The plugin's own direct integrations below are used only as a fallback on older WordPress versions, or when no core provider has been configured.
 
 = GitHub API =
 
@@ -223,6 +229,15 @@ This plugin connects to external third-party services depending on your configur
 8. **Pull from Jekyll** — import Jekyll posts back into WordPress.
 
 == Changelog ==
+
+= 1.0.5 =
+* Reverted the `Text Domain` header to `raybogman-ai-sync-for-jekyll` to match the plugin's folder and requested wordpress.org permalink. No functional changes (the text domain is not referenced by any translation calls).
+
+= 1.0.4 =
+* AI SEO description generation now prefers the **WordPress 7.0+ core AI Client** (`wp_ai_client_prompt()`) when available, routing requests through the provider the site owner configured at the site level (Settings > Connectors). The plugin's own direct Claude/OpenAI integration is retained as a fallback for older WordPress versions or when no core provider is configured. Updated the External Services disclosure and FAQ accordingly. No breaking changes.
+
+= 1.0.3 =
+* Changed the `Text Domain` header to `raybogman-ai-sync-for-jekyll-github-pages` to match the wordpress.org-assigned plugin slug, resolving the Plugin Check `textdomain_mismatch` warning. No functional changes (the text domain is not referenced by any translation calls).
 
 = 1.0.2 =
 * Reverted display name to **Ray Bogman AI Sync for Jekyll & GitHub Pages** — the previous v1.0.1 attempt at "AI WordPress Sync…" was rejected by Plugin Check because "WordPress" is a restricted term that cannot appear anywhere in a plugin name (wp.org trademark policy). Cross-promo fix from 1.0.1 is retained.

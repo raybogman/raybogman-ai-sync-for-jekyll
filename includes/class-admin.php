@@ -702,6 +702,7 @@ class WPJS_Admin {
 					<li><a href="#faq-diff-view">What is the Diff view?</a></li>
 					<li><a href="#faq-ai-description">How does AI description generation work?</a></li>
 					<li><a href="#faq-ai-alt-text">How does AI image alt text work?</a></li>
+					<li><a href="#faq-core-ai-client">Does this use the WordPress 7.0 core AI Client?</a></li>
 					<li><a href="#faq-github-actions">What is the GitHub Actions trigger?</a></li>
 					<li><a href="#faq-auto-push-publish">What is auto-push on publish?</a></li>
 					<li><a href="#faq-scheduled-sync">What is scheduled auto-sync?</a></li>
@@ -830,6 +831,11 @@ class WPJS_Admin {
 				<p>Uses AI vision (Claude or OpenAI) to describe images. Works for featured and inline images. Alt text saved to WP attachment meta and used in Jekyll output.</p>
 			</div>
 
+			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-core-ai-client">
+				<h3 style="margin-top:0;">Does this use the WordPress 7.0 core AI Client?</h3>
+				<p>Yes. On WordPress 7.0 or newer, if the site owner has configured an AI provider through the core AI Client (Settings &rarr; Connectors), SEO description generation is routed through that core AI Client first — no provider API key needs to be entered here, and the plugin never contacts the provider directly. On older WordPress, or when no core provider is configured, the plugin falls back to its own Claude/OpenAI integration using the API key you enter on the Connection tab.</p>
+			</div>
+
 			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-github-actions">
 				<h3 style="margin-top:0;">What is the GitHub Actions trigger?</h3>
 				<p>Optional. Enter a workflow filename (e.g. jekyll.yml) on the Connection tab. After each push, the plugin triggers that workflow via the GitHub API to rebuild your Jekyll site.</p>
@@ -883,7 +889,7 @@ class WPJS_Admin {
 					About Ray Bogman AI Sync for Jekyll &amp; GitHub Pages
 				</h2>
 				<p style="font-size:14px;line-height:1.6;">
-					<strong>Ray Bogman AI Sync for Jekyll &amp; GitHub Pages</strong> bridges the gap between WordPress content management and Jekyll static site generation. Write and manage your content in WordPress, then publish directly to your Jekyll GitHub Pages site with a single click. An optional AI panel (Claude or OpenAI) generates SEO descriptions and image alt text on demand — no required cloud dependency.
+					<strong>Ray Bogman AI Sync for Jekyll &amp; GitHub Pages</strong> bridges the gap between WordPress content management and Jekyll static site generation. Write and manage your content in WordPress, then publish directly to your Jekyll GitHub Pages site with a single click. An optional AI panel (Claude or OpenAI) generates SEO descriptions and image alt text on demand — no required cloud dependency. On WordPress 7.0+, AI description generation prefers the core AI Client (Settings &rarr; Connectors) when a provider is configured, falling back to the plugin's own integration otherwise.
 				</p>
 				<p style="font-size:13px;line-height:1.6;color:#646970;font-style:italic;">
 					Jekyll and GitHub are projects/trademarks of their respective owners. This plugin is an independent integration and is not affiliated with or endorsed by either.
@@ -923,6 +929,7 @@ class WPJS_Admin {
 						<tr><td>Diff View (WP vs Jekyll)</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
 						<tr><td>AI Description Generator</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
 						<tr><td>AI Image Alt Text (Vision)</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
+						<tr><td>WordPress 7.0+ Core AI Client (with direct fallback)</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
 						<tr><td>GitHub Actions Trigger</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
 						<tr><td>Auto-push on Publish</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>
 						<tr><td>Scheduled Auto-Sync (WP-Cron)</td><td style="text-align:center;"><span class="dashicons dashicons-yes-alt" style="color:#00a32a;"></span></td></tr>

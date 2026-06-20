@@ -1,0 +1,94 @@
+name: Build & deploy plugin
+
+# - Every push to main and every v* tag builds a distributable plugin zip
+#   (uploaded as a downloadable artifact).
+# - Every v* tag ALSO deploys to the WordPress.org plugin SVN repository via
+#   10up/action-wordpress-plugin-deploy. The deploy respects .distignore and
+#   reads the version from readme.txt "Stable tag". Requires repository secrets
+#   SVN_USERNAME and SVN_PASSWORD (set in your WordPress.org "Account & Security").
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build zip
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
+      - name: Resolve version
+        id: version
+        run: |
+          set -euo pipefail
+          PLUGIN_FILE="raybogman-ai-sync-for-jekyll.php"
+          HEADER_VERSION="$(grep -E '^\s*\*\s*Version:' "$PLUGIN_FILE" | head -1 | sed -E 's/.*Version:[[:space:]]*([0-9.]+).*/\1/')"
+          if [ "${GITHUB_REF_TYPE:-branch}" = "tag" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="${HEADER_VERSION}"
+          fi
+          echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Resolved version=${VERSION}"
+
+      - name: Create plugin zip
+        run: |
+          zip -r raybogman-ai-sync-for-jekyll.zip . \
+            -x '.git/*' \
+            -x '.github/*' \
+            -x '.wordpress-org/*' \
+            -x '.claude/*' \
+            -x '*.DS_Store' \
+            -x '__MACOSX/*' \
+            -x '.gitignore' \
+            -x '.gitattributes' \
+            -x '.distignore' \
+            -x '.editorconfig' \
+            -x '.env' \
+            -x 'node_modules/*' \
+            -x 'vendor/*' \
+            -x 'phpcs.xml.dist' \
+            -x 'phpcs.xml' \
+            -x 'composer.json' \
+            -x 'composer.lock' \
+            -x '*.zip'
+
+      - name: Upload zip artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: raybogman-ai-sync-for-jekyll-${{ steps.version.outputs.VERSION }}-${{ github.sha }}
+          path: raybogman-ai-sync-for-jekyll.zip
+          retention-days: 90
+
+  deploy:
+    # Only deploy to WordPress.org when a v* tag is pushed.
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    name: Deploy to WordPress.org
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: WordPress.org plugin deploy
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        with:
+          generate-zip: true
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: raybogman-ai-sync-for-jekyll
+
+      - name: Upload deployed zip artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wordpress-org-${{ github.ref_name }}
+          path: ${{ github.workspace }}/raybogman-ai-sync-for-jekyll.zip
+          retention-days: 90
