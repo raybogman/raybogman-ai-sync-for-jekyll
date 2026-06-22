@@ -5,7 +5,7 @@ Tags: jekyll, markdown, static site, sync, deployment
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -229,6 +229,9 @@ This plugin connects to external third-party services depending on your configur
 8. **Pull from Jekyll** — import Jekyll posts back into WordPress.
 
 == Changelog ==
+
+= 1.0.6 =
+* Set the `Text Domain` header to `raybogman-ai-sync-for-jekyll-github-pages` to match the approved wordpress.org plugin slug. No functional changes (the text domain is not referenced by any translation calls).
 
 = 1.0.5 =
 * Reverted the `Text Domain` header to `raybogman-ai-sync-for-jekyll` to match the plugin's folder and requested wordpress.org permalink. No functional changes (the text domain is not referenced by any translation calls).

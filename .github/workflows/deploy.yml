@@ -84,7 +84,7 @@ jobs:
         env:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-          SLUG: raybogman-ai-sync-for-jekyll
+          SLUG: raybogman-ai-sync-for-jekyll-github-pages
 
       - name: Upload deployed zip artifact
         uses: actions/upload-artifact@v7
