@@ -4,3 +4,4 @@ __MACOSX/
 node_modules/
 .env
 .claude/
+*.svg.png

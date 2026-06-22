@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" fill="#ffffff"/>
+  <!-- Sync symbol (orange), centered ~ (512,330) -->
+  <g transform="translate(320,150) scale(16)" fill="#f67c07">
+    <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+  </g>
+  <!-- divider -->
+  <rect x="312" y="600" width="400" height="8" rx="4" fill="#f67c07"/>
+  <!-- wordmark -->
+  <text x="512" y="712" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="92" fill="#f67c07">AI Sync for</text>
+  <text x="512" y="812" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="92" fill="#f67c07">Jekyll</text>
+</svg>
