@@ -5,7 +5,7 @@ Tags: jekyll, markdown, static site, sync, deployment
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -219,16 +219,18 @@ This plugin connects to external third-party services depending on your configur
 
 == Screenshots ==
 
-1. **Articles** — manage posts and pages with push, preview, AI, diff, delete, and verify actions.
-2. **Dashboard** — stats overview with total posts, synced, outdated, and recent activity log.
-3. **Connection Settings** — GitHub OAuth login, repo/branch picker, AI provider configuration.
-4. **Content Settings** — content mapping, URL rewriting, author selection.
-5. **Formatting** — style detection from your Jekyll site with front matter and Markdown analysis.
-6. **AI Panel** — inline description editor and image alt text generator with regenerate and save.
-7. **Diff View** — compare current WordPress content with what is live on Jekyll.
-8. **Pull from Jekyll** — import Jekyll posts back into WordPress.
+1. **Dashboard** — stats overview (total posts/pages, published, outdated, not published, approved) with a recent activity log and quick actions.
+2. **Articles** — manage posts and pages with per-row push, preview, AI, diff, delete, and verify actions, plus bulk approve and publish.
+3. **Connection settings** — GitHub account connection, repository and branch picker, GitHub Actions trigger, auto-push, scheduled sync, and AI provider configuration (Claude / OpenAI).
+4. **Content settings** — map posts and pages to Jekyll paths, set the base URL with internal link rewriting, and choose the front-matter author.
+5. **Formatting** — Standard vs Style-aware conversion, with style detection that reads your Jekyll site's front matter, Markdown conventions, and permalink patterns.
+6. **Sync log** — every push, pull, and delete recorded with date, user, post, action, path, and result.
+7. **Pull from Jekyll** — import Jekyll posts back into WordPress as drafts.
 
 == Changelog ==
+
+= 1.0.7 =
+* Added wordpress.org listing assets (plugin icon, banner, and admin screenshots) and corrected the screenshot captions in the readme to match the current admin screens. No functional changes.
 
 = 1.0.6 =
 * Set the `Text Domain` header to `raybogman-ai-sync-for-jekyll-github-pages` to match the approved wordpress.org plugin slug. No functional changes (the text domain is not referenced by any translation calls).
