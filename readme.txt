@@ -3,9 +3,9 @@ Contributors: raybogman
 Donate link: https://raybogman.com
 Tags: jekyll, markdown, static site, sync, deployment
 Requires at least: 5.8
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -228,6 +228,9 @@ This plugin connects to external third-party services depending on your configur
 7. **Pull from Jekyll** — import Jekyll posts back into WordPress as drafts.
 
 == Changelog ==
+
+= 1.0.8 =
+* Tested up to WordPress 7.1 (verified on 7.1-RC2 with Plugin Check and WP_DEBUG — no changes required).
 
 = 1.0.7 =
 * Added wordpress.org listing assets (plugin icon, banner, and admin screenshots) and corrected the screenshot captions in the readme to match the current admin screens. No functional changes.
