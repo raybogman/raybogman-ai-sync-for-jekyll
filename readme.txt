@@ -5,7 +5,7 @@ Tags: jekyll, markdown, static site, sync, deployment
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.9
+Stable tag: 1.0.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -228,6 +228,9 @@ This plugin connects to external third-party services depending on your configur
 7. **Pull from Jekyll** — import Jekyll posts back into WordPress as drafts.
 
 == Changelog ==
+
+= 1.0.10 =
+* Fix: re-pulling an existing draft did not keep the front matter date (WordPress resets a draft's date on update unless told otherwise). The date is now applied on both import and update.
 
 = 1.0.9 =
 * Fix: Pull from Jekyll now uses the Jekyll filename as the WordPress slug (it used a slug derived from the title, which could differ and made the plugin think the post did not exist yet) and sets the publication date from the front matter `date` (it used the import time). Pulling an existing draft again corrects its slug and date; published posts keep their URL and date.

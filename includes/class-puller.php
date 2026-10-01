@@ -87,6 +87,8 @@ class WPJS_Puller {
 				if ( $timestamp ) {
 					$post_data['post_date']     = wp_date( 'Y-m-d H:i:s', $timestamp );
 					$post_data['post_date_gmt'] = gmdate( 'Y-m-d H:i:s', $timestamp );
+					// Without this, wp_update_post() resets a draft's date to "now".
+					$post_data['edit_date']     = true;
 				}
 			}
 			$result = wp_update_post( $post_data, true );
