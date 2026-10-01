@@ -5,7 +5,7 @@ Tags: jekyll, markdown, static site, sync, deployment
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.8
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -164,7 +164,7 @@ WP-Cron based. Configure an interval (1/6/12/24 hours) and mode (approved and ou
 
 = How does Pull from Jekyll work? =
 
-The Pull tab lists all Markdown files in your Jekyll _posts directory. You can import individual posts or all new posts at once. Creates WP posts as drafts with parsed content.
+The Pull tab lists all Markdown files in your Jekyll _posts directory. You can import individual posts or all new posts at once. New posts are created as drafts with the parsed content, the Jekyll filename as the WordPress slug and the front matter date as the publication date, so the imported post keeps the same URL and date as on your Jekyll site. Pulling again updates an existing post (a draft also gets its slug and date corrected).
 
 = What does Verify do? =
 
@@ -228,6 +228,10 @@ This plugin connects to external third-party services depending on your configur
 7. **Pull from Jekyll** — import Jekyll posts back into WordPress as drafts.
 
 == Changelog ==
+
+= 1.0.9 =
+* Fix: Pull from Jekyll now uses the Jekyll filename as the WordPress slug (it used a slug derived from the title, which could differ and made the plugin think the post did not exist yet) and sets the publication date from the front matter `date` (it used the import time). Pulling an existing draft again corrects its slug and date; published posts keep their URL and date.
+* Pulled posts remember their Jekyll file path, so renamed titles no longer create duplicates.
 
 = 1.0.8 =
 * Tested up to WordPress 7.1 (verified on 7.1-RC2 with Plugin Check and WP_DEBUG — no changes required).

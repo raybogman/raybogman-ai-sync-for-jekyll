@@ -3,6 +3,54 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class WPJS_Puller {
 
+	/** Post meta: path of the Jekyll file this post was pulled from. */
+	const META_JEKYLL_PATH = '_wpjs_jekyll_path';
+
+	/**
+	 * Slug from a Jekyll filename: strips the date prefix and extension.
+	 */
+	public static function slug_from_path( $path ) {
+		$name = basename( (string) $path );
+		$name = preg_replace( '/^\d{4}-\d{2}-\d{2}-/', '', $name );
+		return sanitize_title( preg_replace( '/\.(md|markdown)$/i', '', $name ) );
+	}
+
+	/**
+	 * Timestamp from the front matter date (any strtotime-parsable form,
+	 * e.g. "2026-10-01 08:00:00 +0000"), falling back to the filename date.
+	 */
+	private static function date_from_front_matter( $fm_date, $path ) {
+		$ts = ! empty( $fm_date ) ? strtotime( (string) $fm_date ) : false;
+		if ( ! $ts && preg_match( '/^(\d{4}-\d{2}-\d{2})-/', basename( (string) $path ), $m ) ) {
+			$ts = strtotime( $m[1] . ' 09:00:00 UTC' );
+		}
+		return $ts ? (int) $ts : 0;
+	}
+
+	/**
+	 * Find the WP post for a Jekyll file: by stored path, by filename slug,
+	 * then by title slug (how versions before 1.0.9 created the post).
+	 */
+	public static function find_existing( $jekyll_path, $slug, $title_slug = '' ) {
+		$by_meta = get_posts( array(
+			'post_type'      => array( 'post', 'page' ),
+			'post_status'    => 'any',
+			'posts_per_page' => 1,
+			'meta_key'       => self::META_JEKYLL_PATH, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			'meta_value'     => $jekyll_path, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		) );
+		if ( $by_meta ) {
+			return $by_meta[0];
+		}
+		foreach ( array_unique( array_filter( array( $slug, $title_slug ) ) ) as $candidate ) {
+			$post = get_page_by_path( $candidate, OBJECT, array( 'post', 'page' ) );
+			if ( $post && 'trash' !== $post->post_status ) {
+				return $post;
+			}
+		}
+		return null;
+	}
+
 	public static function pull_post( $jekyll_path ) {
 		$client  = new WPJS_GitHub_Client();
 		$content = $client->get_file_content( $jekyll_path );
@@ -11,9 +59,14 @@ class WPJS_Puller {
 		$parsed = self::parse_markdown( $content );
 		if ( is_wp_error( $parsed ) ) { return $parsed; }
 
-		// Find existing WP post by slug.
-		$slug = $parsed['slug'];
-		$existing = get_page_by_path( $slug, OBJECT, array( 'post', 'page' ) );
+		// The Jekyll filename is the URL slug on the Jekyll site, so it is the
+		// slug WordPress should use too (a title-based slug often differs).
+		$slug = self::slug_from_path( $jekyll_path );
+		if ( '' === $slug ) {
+			$slug = $parsed['slug'];
+		}
+
+		$existing = self::find_existing( $jekyll_path, $slug, $parsed['slug'] );
 
 		$post_data = array(
 			'post_title'   => $parsed['title'],
@@ -22,18 +75,34 @@ class WPJS_Puller {
 			'post_type'    => $parsed['layout'] === 'page' ? 'page' : 'post',
 		);
 
+		// Publication date: front matter `date`, else the filename date.
+		$timestamp = self::date_from_front_matter( $parsed['date'], $jekyll_path );
+
 		if ( $existing ) {
-			$post_data['ID'] = $existing->ID;
+			$post_data['ID']          = $existing->ID;
 			$post_data['post_status'] = $existing->post_status;
+			// Drafts are safe to correct; a published post keeps its URL and date.
+			if ( 'draft' === $existing->post_status ) {
+				$post_data['post_name'] = $slug;
+				if ( $timestamp ) {
+					$post_data['post_date']     = wp_date( 'Y-m-d H:i:s', $timestamp );
+					$post_data['post_date_gmt'] = gmdate( 'Y-m-d H:i:s', $timestamp );
+				}
+			}
 			$result = wp_update_post( $post_data, true );
 		} else {
 			$post_data['post_name'] = $slug;
+			if ( $timestamp ) {
+				$post_data['post_date']     = wp_date( 'Y-m-d H:i:s', $timestamp );
+				$post_data['post_date_gmt'] = gmdate( 'Y-m-d H:i:s', $timestamp );
+			}
 			$result = wp_insert_post( $post_data, true );
 		}
 
 		if ( is_wp_error( $result ) ) { return $result; }
 
-		$post_id = is_int( $result ) ? $result : $result;
+		$post_id = (int) $result;
+		update_post_meta( $post_id, self::META_JEKYLL_PATH, $jekyll_path );
 
 		// Save meta.
 		if ( ! empty( $parsed['description'] ) ) {
@@ -76,8 +145,8 @@ class WPJS_Puller {
 			$slug = preg_replace( '/^\d{4}-\d{2}-\d{2}-/', '', $f['name'] );
 			$slug = preg_replace( '/\.(md|markdown)$/i', '', $slug );
 
-			// Check if exists in WP.
-			$wp_post    = get_page_by_path( $slug, OBJECT, array( 'post', 'page' ) );
+			// Check if exists in WP (stored Jekyll path first, then slug).
+			$wp_post    = self::find_existing( $f['path'], $slug );
 			$last_push  = $wp_post ? get_post_meta( $wp_post->ID, WPJS_Publisher::META_LAST_PUSH, true ) : '';
 
 			$result[] = array(
@@ -151,6 +220,7 @@ class WPJS_Puller {
 		return array(
 			'title'        => $fm['title'] ?? '',
 			'slug'         => $slug,
+			'date'         => $fm['date'] ?? '',
 			'layout'       => $fm['layout'] ?? 'post',
 			'description'  => $fm['description'] ?? ( $fm['excerpt'] ?? '' ),
 			'tags'         => isset( $fm['tags'] ) && is_array( $fm['tags'] ) ? $fm['tags'] : array(),

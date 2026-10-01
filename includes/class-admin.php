@@ -853,7 +853,7 @@ class WPJS_Admin {
 
 			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-pull-jekyll">
 				<h3 style="margin-top:0;">How does Pull from Jekyll work?</h3>
-				<p>The Pull tab lists all Markdown files in your Jekyll _posts directory. You can import individual posts or all new posts at once. Creates WP posts as drafts with parsed content.</p>
+				<p>The Pull tab lists all Markdown files in your Jekyll _posts directory. You can import individual posts or all new posts at once. New posts are created as drafts with the parsed content, the Jekyll filename as the WordPress slug, and the front matter <code>date</code> as the publication date, so the imported post keeps the same URL and date as on your Jekyll site. Pulling again updates an existing post; a draft also gets its slug and date corrected, a published post keeps its URL and date.</p>
 			</div>
 
 			<div class="card" style="padding:16px 20px;margin-bottom:12px;" id="faq-verify">
